@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Pesanan;
-use App\Models\Produk;
+use App\Models\Produk;       // Pastikan ini sudah ada
 use App\Models\ItemPesanan;
 use Carbon\Carbon;
 
@@ -39,11 +39,23 @@ class PesananController extends Controller
 
         $pesanans = $query->orderBy('tanggal_pesanan', 'desc')->paginate(10);
 
-        // Define a fixed list of possible statuses for the dropdown
-        // This is safer than relying on existing data, ensuring all options are present.
         $allStatuses = ['pending', 'diproses', 'dikirim', 'selesai', 'dibatalkan'];
 
         return view('admin.index_pesanan', compact('pesanans', 'statusFilter', 'searchQuery', 'allStatuses'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function create()  // <-- METHOD BARU DITAMBAHKAN DI SINI
+    {
+        // Ambil semua produk yang aktif untuk ditampilkan di dropdown form
+        $produks = Produk::where('is_active', true)->orderBy('nama_produk')->get(); 
+        
+        // Tampilkan view untuk form tambah pesanan, kirim data produks
+        return view('admin.create_pesanan', compact('produks'));
     }
 
     /**
@@ -98,7 +110,7 @@ class PesananController extends Controller
             'telepon_pelanggan' => $request->telepon_pelanggan,
             'alamat_pengiriman' => $request->alamat_pengiriman,
             'catatan_khusus' => $request->catatan_khusus,
-            'status_pesanan' => 'pending',
+            'status_pesanan' => 'pending', 
             'total_harga' => $totalHargaPesanan,
         ]);
 
@@ -128,7 +140,7 @@ class PesananController extends Controller
     public function edit(int $id)
     {
         $pesanan = Pesanan::with('itemPesanans.produk')->findOrFail($id);
-        $produks = Produk::where('is_active', true)->get();
+        $produks = Produk::where('is_active', true)->orderBy('nama_produk')->get(); // Perbaikan: order by nama_produk
         return view('admin.edit_pesanan', compact('pesanan', 'produks'));
     }
 
@@ -190,10 +202,12 @@ class PesananController extends Controller
             'total_harga' => $totalHargaPesanan,
         ]);
 
-        $pesanan->itemPesanans()->delete();
+        $pesanan->itemPesanans()->delete(); // Hapus item lama
+        // Buat item baru, jangan gunakan createMany langsung dari $newItems jika key berbeda
         foreach ($newItems as $itemData) {
             $pesanan->itemPesanans()->create($itemData);
         }
+
 
         return redirect()->route('admin.pesanan.show', $pesanan->id)->with('success', 'Pesanan berhasil diperbarui!');
     }
@@ -207,7 +221,7 @@ class PesananController extends Controller
     public function destroy(int $id)
     {
         $pesanan = Pesanan::findOrFail($id);
-        $pesanan->itemPesanans()->delete();
+        $pesanan->itemPesanans()->delete(); // Hapus item terkait dulu
         $pesanan->delete();
 
         return redirect()->route('admin.pesanan.index')->with('success', 'Pesanan berhasil dihapus!');
@@ -222,7 +236,6 @@ class PesananController extends Controller
      */
     public function updateStatus(Request $request, int $id)
     {
-        // Validasi request: pastikan status yang dikirim valid
         $request->validate([
             'status' => 'required|string|in:pending,diproses,dikirim,selesai,dibatalkan',
         ]);
@@ -232,11 +245,9 @@ class PesananController extends Controller
             $pesanan->status_pesanan = $request->status;
             $pesanan->save();
 
-            // Kembalikan respons JSON sukses
             return response()->json(['message' => 'Status pesanan berhasil diperbarui!', 'new_status' => $pesanan->status_pesanan], 200);
 
         } catch (\Exception $e) {
-            // Kembalikan respons JSON error
             return response()->json(['message' => 'Gagal memperbarui status pesanan.', 'error' => $e->getMessage()], 500);
         }
     }

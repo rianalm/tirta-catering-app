@@ -7,28 +7,11 @@
 <style>
     /* Gaya CSS yang sebelumnya ada di <style> tag di file asli dipindahkan ke sini */
     /* Gaya CSS Dasar */
-    /* ... (Salin semua CSS dari file asli Anda ke sini) ... */
-    /* Contoh: */
-    .container-content { /* Jika Anda menggunakan ini sebagai wrapper utama konten */
-        /* background-color: #ffffff; (sudah ada di layout jika pakai .container-content) */
-        /* padding: 30px; (sudah ada di layout jika pakai .container-content) */
-        /* border-radius: 12px; (sudah ada di layout jika pakai .container-content) */
-        /* box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); (sudah ada di layout jika pakai .container-content) */
-        max-width: 800px; /* Spesifik untuk halaman ini */
-        margin: 0 auto; /* Tengahkan jika max-width lebih kecil dari layout */
-    }
-    /* Gaya untuk Judul Utama di dalam konten */
+    .container-content { max-width: 800px; margin: 0 auto; }
     .content-header h1 {
-        text-align: center;
-        color: #2c3e50;
-        margin-bottom: 30px;
-        font-size: 2.2em;
-        font-weight: 700;
+        text-align: center; color: #2c3e50; margin-bottom: 30px; font-size: 2.2em; font-weight: 700;
     }
-    label {
-        display: block; margin-top: 15px; margin-bottom: 5px;
-        font-weight: 600; color: #34495e; font-size: 0.95em;
-    }
+    label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: 600; color: #34495e; font-size: 0.95em; }
     input[type="text"], input[type="date"], input[type="tel"],
     input[type="number"], textarea, select {
         width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ced4da;
@@ -37,9 +20,7 @@
     }
     input[type="text"]:focus, input[type="date"]:focus, input[type="tel"]:focus,
     input[type="number"]:focus, textarea:focus, select:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-        outline: none;
+        border-color: #007bff; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); outline: none;
     }
     textarea { resize: vertical; min-height: 100px; }
     .form-section {
@@ -58,26 +39,14 @@
     .item-row .col.product-select { flex: 3; }
     .item-row .col.quantity-input { flex: 1; }
     .item-row .col.action-button { flex: 0 0 auto; align-self: flex-end; }
-    
-    .btn { /* Tombol umum sudah ada di layout, ini bisa disesuaikan/dihapus jika sama */
-        /* background-color: #28a745; color: white; padding: 12px 25px; */
-        /* ... (ambil dari layout atau sesuaikan) */
-    }
-    .btn-danger { /* Tombol hapus item */
-        background-color: #dc3545; color: white; padding: 10px 15px;
-        font-size: 0.9em; margin-top: 0;
-    }
+    .btn-danger { background-color: #dc3545; color: white; padding: 10px 15px; font-size: 0.9em; margin-top: 0; border:none; border-radius:6px; }
     .btn-danger:hover { background-color: #c82333; }
-
-    .alert { /* Sudah ada di layout, tidak perlu duplikasi jika sama */ }
-    .alert-success { /* Sudah ada di layout */ }
-    .alert-danger { /* Sudah ada di layout */ }
-    .alert-danger ul { margin: 0; padding-left: 20px; }
+    .alert-danger ul { margin: 0; padding-left: 20px; } /* Spesifik untuk list error */
+    /* Umum .alert dan .alert-danger sudah ada di layout utama */
 
     @media (max-width: 768px) {
         .container-content { padding: 20px; margin: 10px auto; }
         .content-header h1 { font-size: 1.8em; }
-        /* .btn { width: 100%; margin-left: 0; margin-bottom: 10px; }  Sudah ditangani layout jika global */
         .item-row { flex-direction: column; align-items: stretch; }
         .item-row .col { flex: none; width: 100%; margin-bottom: 10px; }
         .item-row .col:last-child { margin-bottom: 0; }
@@ -87,7 +56,7 @@
 @endpush
 
 @section('content')
-    <div class="container-content"> {{-- Menggunakan class ini untuk styling spesifik form jika perlu --}}
+    <div class="container-content">
         <div class="content-header">
             <h1>Tambah Pesanan Baru</h1>
         </div>
@@ -110,7 +79,7 @@
                 <h2>Detail Pesanan Menu</h2>
                 <button type="button" class="btn btn-primary" id="add-item-btn" style="margin-bottom: 15px;">Tambah Item Menu</button>
                 <div id="item-list-container" class="item-list">
-                    @if(old('items'))
+                    @if(is_array(old('items')) && count(old('items')) > 0)
                         @foreach(old('items') as $index => $oldItem)
                             <div class="item-row" data-id="{{ $index }}">
                                 <div class="col product-select">
@@ -195,7 +164,8 @@
             </div>
         @endif
 
-        @if ($errors->any() && !$errors->hasAny(['nama_pelanggan', 'telepon_pelanggan', 'items.*', 'tanggal_pengiriman', 'alamat_pengiriman', 'waktu_pengiriman', 'catatan_khusus']))
+        {{-- Menampilkan error umum jika ada, yang tidak tertangkap oleh @error field individual --}}
+        @if ($errors->any() && !$errors->hasAny(['nama_pelanggan', 'telepon_pelanggan', 'items.*.produk_id', 'items.*.jumlah', 'tanggal_pengiriman', 'alamat_pengiriman', 'waktu_pengiriman', 'catatan_khusus']))
             <div class="alert alert-danger" style="margin-top: 20px;">
                 <ul>
                     @foreach ($errors->all() as $error)
@@ -209,7 +179,6 @@
 
 @push('scripts')
 <script>
-    // Log untuk melacak eksekusi skrip
     console.log("Skrip JavaScript dimuat untuk create_pesanan.");
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -219,16 +188,13 @@
         const itemContainer = document.getElementById('item-list-container');
         const totalPriceDisplay = document.getElementById('total-price-display');
 
-        console.log("Element add-item-btn:", addItemBtn);
-        console.log("Element item-list-container:", itemContainer);
-        console.log("Element total-price-display:", totalPriceDisplay);
-
-        let itemIndex = 0;
+        let itemIndex = 0; // Akan diinisialisasi dengan benar di bawah
         if (itemContainer) {
             const initialItems = itemContainer.querySelectorAll('.item-row');
             itemIndex = initialItems.length;
+            console.log(`Initial itemIndex from rendered .item-row elements: ${itemIndex}`);
         } else {
-            console.error("item-list-container tidak ditemukan!");
+            console.error("item-list-container tidak ditemukan! Fungsionalitas tambah item tidak akan bekerja.");
             return; 
         }
 
@@ -247,32 +213,35 @@
                     }
                 }
             });
-            totalPriceDisplay.textContent = `Rp ${new Intl.NumberFormat('id-ID').format(currentTotal)}`;
-            console.log("Total harga diupdate:", currentTotal);
+            if(totalPriceDisplay) {
+                 totalPriceDisplay.textContent = `Rp ${new Intl.NumberFormat('id-ID').format(currentTotal)}`;
+            }
+            // console.log("Total harga diupdate:", currentTotal); // Kurangi logging jika sudah production
         }
 
-        function createItemRow(index, selectedProductId = null, quantity = 1) {
-            console.log(`Membuat baris item baru dengan index: ${index}`);
-            const produksData = @json($produks);
-            let productOptions = '<option value="">Pilih Produk</option>'; // Selalu tambahkan opsi default
-            produksData.forEach(produk => {
-                const selected = (selectedProductId == produk.id) ? 'selected' : '';
-                productOptions += `<option value="${produk.id}" ${selected} data-price="${produk.harga_jual}">${produk.nama_produk} (Rp ${new Intl.NumberFormat('id-ID').format(produk.harga_jual)})</option>`;
-            });
+        function createItemRow(currentIndex) { // Menggunakan currentIndex sebagai parameter
+            console.log(`Membuat baris item baru dengan index untuk nama: ${currentIndex}`);
+            const produksData = @json($produks ?? []);
+            let productOptions = '<option value="">Pilih Produk</option>';
+            if(Array.isArray(produksData)) {
+                produksData.forEach(produk => {
+                    productOptions += `<option value="${produk.id}" data-price="${produk.harga_jual}">${produk.nama_produk} (Rp ${new Intl.NumberFormat('id-ID').format(produk.harga_jual)})</option>`;
+                });
+            }
 
             const itemRow = document.createElement('div');
             itemRow.classList.add('item-row');
-            itemRow.setAttribute('data-id', index);
+            // Tidak perlu data-id jika index nama sudah unik
             itemRow.innerHTML = `
                 <div class="col product-select">
-                    <label for="items_${index}_produk_id">Produk:</label>
-                    <select name="items[${index}][produk_id]" id="items_${index}_produk_id" required>
+                    <label for="items_${currentIndex}_produk_id">Produk:</label>
+                    <select name="items[${currentIndex}][produk_id]" id="items_${currentIndex}_produk_id" required>
                         ${productOptions}
                     </select>
                 </div>
                 <div class="col quantity-input">
-                    <label for="items_${index}_jumlah">Jumlah Porsi:</label>
-                    <input type="number" id="items_${index}_jumlah" name="items[${index}][jumlah]" value="${quantity}" min="1" required>
+                    <label for="items_${currentIndex}_jumlah">Jumlah Porsi:</label>
+                    <input type="number" id="items_${currentIndex}_jumlah" name="items[${currentIndex}][jumlah]" value="1" min="1" required>
                 </div>
                 <div class="col action-button">
                     <button type="button" class="btn btn-danger remove-item-btn">Hapus</button>
@@ -282,15 +251,14 @@
             const removeBtn = itemRow.querySelector('.remove-item-btn');
             if (removeBtn) {
                 removeBtn.addEventListener('click', function() {
-                    console.log(`Tombol hapus di baris ${index} diklik.`);
                     itemRow.remove(); 
                     updateRemoveButtonsVisibility();
                     calculateTotalPrice();
                 });
             }
 
-            const newProdukSelect = itemRow.querySelector(`#items_${index}_produk_id`);
-            const newJumlahInput = itemRow.querySelector(`#items_${index}_jumlah`);
+            const newProdukSelect = itemRow.querySelector(`#items_${currentIndex}_produk_id`);
+            const newJumlahInput = itemRow.querySelector(`#items_${currentIndex}_jumlah`);
 
             if (newProdukSelect) newProdukSelect.addEventListener('change', calculateTotalPrice);
             if (newJumlahInput) newJumlahInput.addEventListener('input', calculateTotalPrice);
@@ -300,7 +268,7 @@
 
         function updateRemoveButtonsVisibility() {
             const currentItems = itemContainer.querySelectorAll('.item-row');
-            console.log(`Jumlah item saat ini: ${currentItems.length}`);
+            // console.log(`Jumlah item saat ini: ${currentItems.length}`);
             currentItems.forEach((row) => {
                 const removeBtn = row.querySelector('.remove-item-btn');
                 if (removeBtn) {
@@ -311,18 +279,16 @@
 
         if (addItemBtn) {
             addItemBtn.addEventListener('click', function() {
-                console.log("Tombol 'Tambah Item Menu' diklik! Menambah baris baru.");
-                const newItemRow = createItemRow(itemIndex);
+                // console.log("Tombol 'Tambah Item Menu' diklik! Menambah baris baru.");
+                const newItemRow = createItemRow(itemIndex); // itemIndex adalah index berikutnya
                 itemContainer.appendChild(newItemRow);
-                itemIndex++;
+                itemIndex++; // Naikkan itemIndex untuk baris berikutnya yang akan dibuat
                 updateRemoveButtonsVisibility();
                 calculateTotalPrice(); 
             });
         } else {
             console.warn("Tombol 'Tambah Item Menu' (ID: add-item-btn) tidak ditemukan.");
         }
-
-        updateRemoveButtonsVisibility();
 
         itemContainer.querySelectorAll('.item-row').forEach(row => {
             const removeBtn = row.querySelector('.remove-item-btn');
@@ -347,19 +313,8 @@
                 jumlahInput.dataset.listenerAdded = true;
             }
         });
-
-        @if(old('items'))
-            itemIndex = {{ count(old('items')) }};
-            console.log(`itemIndex diinisialisasi ulang berdasarkan old input: ${itemIndex}`);
-        @elseif(itemContainer.querySelectorAll('.item-row').length === 0 && itemIndex === 0)
-            // Jika tidak ada old item dan tidak ada item awal dari Blade (misalnya, jika @else tidak ada),
-            // maka kita bisa tambahkan satu baris awal. Tapi karena @else sudah ada, ini mungkin tidak perlu.
-            // const firstItemRow = createItemRow(itemIndex);
-            // itemContainer.appendChild(firstItemRow);
-            // itemIndex++;
-            // updateRemoveButtonsVisibility();
-        @endif
-
+        
+        updateRemoveButtonsVisibility();
         calculateTotalPrice();
     });
 </script>
