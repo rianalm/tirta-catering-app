@@ -1,100 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Produk - Tirta Catering</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f2f5;
-            color: #333;
-        }
+{{-- resources/views/admin/produk/show.blade.php --}}
+@extends('layouts.admin')
 
-        .container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-            max-width: 700px;
-            margin: 20px auto;
-            box-sizing: border-box;
-        }
+@section('title', 'Detail Produk - ' . $produk->nama_produk)
 
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 2.2em;
-            font-weight: 700;
-        }
+@push('styles')
+<style>
+    /* Gaya CSS spesifik untuk halaman ini jika ada */
+    .container-content { max-width: 700px; margin: 0 auto; }
+    .content-header h1 { text-align: center; }
+    .detail-group {
+        margin-bottom: 15px; padding: 10px 0;
+        border-bottom: 1px dashed #e0e0e0;
+    }
+    .detail-group:last-of-type { border-bottom: none; } /* Menggunakan last-of-type untuk elemen terakhir dengan class ini */
+    .detail-group label {
+        font-weight: 600; color: #495057; display: block; margin-bottom: 5px;
+    }
+    .detail-group p, .detail-group ul { margin: 0; color: #555; line-height: 1.6; }
+    .komponen-list { list-style: disc; padding-left: 20px; margin-top: 5px;}
+    .komponen-list li {}
+    .actions-bottom { margin-top: 30px; text-align: center; }
+</style>
+@endpush
 
-        .detail-group {
-            margin-bottom: 15px;
-            padding: 10px 0;
-            border-bottom: 1px dashed #e0e0e0;
-        }
-
-        .detail-group:last-child {
-            border-bottom: none;
-        }
-
-        .detail-group label {
-            font-weight: 600;
-            color: #495057;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .detail-group p {
-            margin: 0;
-            color: #555;
-            line-height: 1.6;
-        }
-
-        .actions-bottom {
-            margin-top: 30px;
-            text-align: center;
-        }
-
-        .btn-back, .btn-edit {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: background-color 0.2s;
-            text-decoration: none;
-            display: inline-block;
-            margin: 0 5px;
-        }
-
-        .btn-back {
-            background-color: #6c757d;
-            color: white;
-        }
-
-        .btn-back:hover {
-            background-color: #5a6268;
-        }
-
-        .btn-edit {
-            background-color: #ffc107;
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background-color: #e0a800;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Detail Produk</h1>
+@section('content')
+    <div class="container-content">
+        <div class="content-header">
+            <h1>Detail Produk: {{ $produk->nama_produk }}</h1>
+        </div>
 
         <div class="detail-group">
             <label>ID Produk:</label>
@@ -116,19 +49,35 @@
             <label>Satuan:</label>
             <p>{{ $produk->satuan ?? '-' }}</p>
         </div>
+
+        {{-- Menampilkan Komponen Masakan --}}
+        <div class="detail-group">
+            <label>Komponen Masakan (Resep):</label>
+            @if($produk->komponenMasakans && $produk->komponenMasakans->isNotEmpty())
+                <ul class="komponen-list">
+                    @foreach($produk->komponenMasakans as $komponen)
+                        <li>
+                            {{ $komponen->nama_komponen }} - {{ $komponen->pivot->jumlah_per_porsi }} {{ $komponen->satuan_dasar ?? 'unit' }}
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <p>Produk ini belum memiliki komponen masakan (resep).</p>
+            @endif
+        </div>
+
         <div class="detail-group">
             <label>Dibuat Pada:</label>
-            <p>{{ $produk->created_at?->format('d M Y H:i') ?? '-' }}</p>
+            <p>{{ $produk->created_at?->translatedFormat('d M Y H:i') ?? '-' }}</p>
         </div>
         <div class="detail-group">
             <label>Terakhir Diperbarui:</label>
-            <p>{{ $produk->updated_at?->format('d M Y H:i') ?? '-' }}</p>
+            <p>{{ $produk->updated_at?->translatedFormat('d M Y H:i') ?? '-' }}</p>
         </div>
 
         <div class="actions-bottom">
-            <a href="{{ route('admin.produks.edit', $produk->id) }}" class="btn-edit">Edit Produk</a>
-            <a href="{{ route('admin.produks.index') }}" class="btn-back">Kembali ke Daftar Produk</a>
+            <a href="{{ route('admin.produks.edit', $produk->id) }}" class="btn btn-warning">Edit Produk</a>
+            <a href="{{ route('admin.produks.index') }}" class="btn btn-secondary">Kembali ke Daftar Produk</a>
         </div>
     </div>
-</body>
-</html>
+@endsection
