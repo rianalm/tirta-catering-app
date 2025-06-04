@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\PesananController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\KomponenMasakanController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -39,4 +40,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Laporan routes
     Route::get('laporan/penjualan', [LaporanController::class, 'penjualan'])->name('laporan.penjualan');
+
+    // Komponen Masakan routes
+    Route::resource('komponen-masakan', KomponenMasakanController::class); // Tambahkan ini
 });

@@ -475,7 +475,7 @@
     </div>
     {{-- END MODAL KONFIRMASI HAPUS --}}
 
-    {{-- Script JavaScript --}}
+     {{-- Script JavaScript --}}
     <script>
         // CSRF Token for AJAX requests
         const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '';
@@ -504,7 +504,7 @@
         let pesananIdToDelete = null;
         const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-        const statusFilterSelect = document.getElementById('statusFilter');
+        const statusFilterSelect = document.getElementById('statusFilter'); // Pastikan ini ada di HTML Anda
 
         function openModal(pesananId) {
             pesananIdToDelete = pesananId;
@@ -542,43 +542,59 @@
             }
         });
 
-        statusFilterSelect.addEventListener('change', function() {
-            window.location.href = this.value;
-        });
+        // Pastikan Anda memiliki elemen dengan ID 'statusFilter' jika Anda menggunakan ini
+        if (statusFilterSelect) {
+            statusFilterSelect.addEventListener('change', function() {
+                window.location.href = this.value;
+            });
+        }
 
-        // --- JavaScript BARU untuk Update Status AJAX ---
+
+        // --- JavaScript BARU untuk Update Status AJAX (MODIFIKASI DI SINI) ---
         document.querySelectorAll('.status-select').forEach(selectElement => {
             selectElement.addEventListener('change', function() {
                 const pesananId = this.dataset.id;
                 const newStatus = this.value;
+                const currentRow = this.closest('tr'); // Dapatkan baris tabel saat ini
+                const statusBadgeSpan = currentRow ? currentRow.querySelector('.status-badge') : null; // Dapatkan span badge
 
                 fetch(`/admin/pesanan/${pesananId}/update-status`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Menggunakan Blade directive untuk CSRF token
+                        'X-CSRF-TOKEN': CSRF_TOKEN // Menggunakan const CSRF_TOKEN
                     },
                     body: JSON.stringify({ status: newStatus })
                 })
                 .then(response => {
-                    // Check if response is OK (2xx status)
                     if (!response.ok) {
-                        // If not OK, parse JSON error and throw it
                         return response.json().then(errorData => {
                             throw new Error(errorData.message || 'Gagal memperbarui status. Silakan coba lagi.');
                         });
                     }
-                    return response.json(); // Parse JSON response
+                    return response.json();
                 })
                 .then(data => {
                     showAjaxMessage(data.message, 'success');
-                    // Optional: Update the selected option visually (though browser usually does this)
-                    // this.value = data.new_status;
+                    
+                    // --- Bagian BARU untuk memperbarui tampilan badge secara instan ---
+                    if (statusBadgeSpan) {
+                        // Hapus semua kelas status lama
+                        statusBadgeSpan.classList.remove('baru', 'diproses', 'selesai', 'dibatalkan');
+                        // Tambahkan kelas status baru (lowercase)
+                        statusBadgeSpan.classList.add(newStatus.toLowerCase());
+                        // Perbarui teks badge (kapitalisasi huruf pertama)
+                        statusBadgeSpan.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+                    }
+                    // --- END Bagian BARU ---
+
                 })
                 .catch(error => {
                     console.error('Error updating status:', error);
                     showAjaxMessage(error.message || 'Terjadi kesalahan saat memperbarui status.', 'error');
+                    // Opsional: Jika terjadi error, kembalikan dropdown ke status sebelumnya
+                    // this.value = this.dataset.oldStatus; // Anda perlu menyimpan status lama di dataset
                 });
             });
         });

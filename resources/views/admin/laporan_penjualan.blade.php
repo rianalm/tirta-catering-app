@@ -144,6 +144,81 @@
             background-color: #5a6268;
         }
 
+        /* Styling for the detail table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0;
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eceeef;
+            vertical-align: middle;
+        }
+
+        thead th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background-color: #f2f2f2;
+        }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item-list li {
+            margin-bottom: 5px;
+            font-size: 0.95em;
+            color: #555;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 0.85em;
+            text-transform: capitalize;
+        }
+
+        .status-badge.baru {
+            background-color: #ffe0b2;
+            color: #e65100;
+        }
+
+        .status-badge.diproses {
+            background-color: #bbdefb;
+            color: #0d47a1;
+        }
+
+        .status-badge.selesai {
+            background-color: #c8e6c9;
+            color: #1b5e20;
+        }
+
+        .status-badge.dibatalkan {
+            background-color: #ffcdd2;
+            color: #b71c1c;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .filter-form {
@@ -160,6 +235,43 @@
             .filter-form button, .filter-form a.btn-reset {
                 width: 100%;
             }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            tr {
+                border: 1px solid #eceeef;
+                margin-bottom: 15px;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+            td:before {
+                position: absolute;
+                top: 0;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: 600;
+                color: #555;
+            }
+            td:nth-of-type(1):before { content: "ID Pesanan:"; }
+            td:nth-of-type(2):before { content: "Tanggal Pesanan:"; }
+            td:nth-of-type(3):before { content: "Pelanggan:"; }
+            td:nth-of-type(4):before { content: "Produk:"; }
+            td:nth-of-type(5):before { content: "Total Harga:"; }
+            td:nth-of-type(6):before { content: "Status:"; }
         }
     </style>
 </head>
@@ -200,8 +312,8 @@
             </p>
         </div>
 
-        {{-- Anda bisa menambahkan tabel detail pesanan di sini nanti jika diperlukan --}}
-        {{--
+        {{-- Tabel Detail Pesanan --}}
+        <h2 style="text-align: center; color: #2c3e50; margin-top: 40px; margin-bottom: 20px;">Detail Pesanan Selesai</h2>
         <div class="table-responsive">
             <table>
                 <thead>
@@ -209,6 +321,7 @@
                         <th>ID Pesanan</th>
                         <th>Tanggal Pesanan</th>
                         <th>Pelanggan</th>
+                        <th>Produk</th>
                         <th>Total Harga</th>
                         <th>Status</th>
                     </tr>
@@ -219,18 +332,32 @@
                             <td>{{ $pesanan->id }}</td>
                             <td>{{ \Carbon\Carbon::parse($pesanan->tanggal_pesanan)->format('d-m-Y') }}</td>
                             <td>{{ $pesanan->nama_pelanggan }}</td>
+                            <td>
+                                @if($pesanan->itemPesanans->isNotEmpty())
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        @foreach($pesanan->itemPesanans as $item)
+                                            <li style="margin-bottom: 5px;">{{ $item->produk->nama_produk }} ({{ $item->jumlah_porsi }} porsi)</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td>Rp {{ number_format($pesanan->total_harga, 0, ',', '.') }}</td>
-                            <td>{{ ucfirst($pesanan->status_pesanan) }}</td>
+                            <td>
+                                <span class="status-badge {{ strtolower($pesanan->status_pesanan) }}">
+                                    {{ ucfirst($pesanan->status_pesanan) }}
+                                </span>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 20px;">Tidak ada data penjualan untuk periode ini.</td>
+                            <td colspan="6" style="text-align: center; padding: 20px;">Tidak ada data penjualan (pesanan 'Selesai') untuk periode ini.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        --}}
 
         <div style="text-align: center;">
             <a href="{{ route('admin.dashboard') }}" class="back-link">Kembali ke Dashboard</a>

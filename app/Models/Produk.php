@@ -9,20 +9,23 @@ class Produk extends Model
 {
     use HasFactory;
 
-    // Tentukan kolom-kolom yang boleh diisi secara massal
     protected $fillable = [
         'nama_produk',
         'deskripsi_produk',
         'harga_jual',
-        'is_active',
+        'satuan',
     ];
 
-    /**
-     * Get the itemPesanans that use this produk.
-     * Satu Produk bisa ada di banyak ItemPesanan.
-     */
-    public function itemPesanans()
+    // Relasi ke ItemPesanan (jika sudah ada, biarkan)
+    // public function itemPesanans()
+    // {
+    //     return $this->hasMany(ItemPesanan::class, 'produk_id');
+    // }
+
+    public function komponenMasakans()
     {
-        return $this->hasMany(ItemPesanan::class);
+        return $this->belongsToMany(KomponenMasakan::class, 'produk_komponen_masakan', 'produk_id', 'komponen_masakan_id')
+                    ->withPivot('jumlah_per_porsi')
+                    ->withTimestamps();
     }
 }
