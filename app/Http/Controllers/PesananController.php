@@ -4,23 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Pesanan;
-use App\Models\Produk;       // Pastikan ini sudah ada
+use App\Models\Produk;
 use App\Models\ItemPesanan;
 use Carbon\Carbon;
 
 class PesananController extends Controller
 {
-    /**
-     * Menampilkan daftar semua pesanan dengan paginasi.
-     * Dapat difilter berdasarkan status dan dicari berdasarkan kata kunci.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
     public function index(Request $request)
     {
         $statusFilter = $request->query('status');
         $searchQuery = $request->query('search');
+        $tanggalFilter = $request->query('filter_tanggal_pengiriman'); 
 
         $query = Pesanan::with('itemPesanans.produk');
 
@@ -37,33 +31,25 @@ class PesananController extends Controller
             });
         }
 
-        $pesanans = $query->orderBy('tanggal_pesanan', 'desc')->paginate(10);
+        if ($tanggalFilter) {
+            $query->whereDate('tanggal_pengiriman', $tanggalFilter)
+                  ->orderBy('waktu_pengiriman', 'asc'); 
+        } else {
+            $query->orderBy('tanggal_pengiriman', 'desc')->orderBy('id', 'desc'); 
+        }
 
+        $pesanans = $query->paginate(10);
         $allStatuses = ['pending', 'diproses', 'dikirim', 'selesai', 'dibatalkan'];
 
-        return view('admin.index_pesanan', compact('pesanans', 'statusFilter', 'searchQuery', 'allStatuses'));
+        return view('admin.index_pesanan', compact('pesanans', 'statusFilter', 'searchQuery', 'allStatuses', 'tanggalFilter'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function create()  // <-- METHOD BARU DITAMBAHKAN DI SINI
+    public function create()
     {
-        // Ambil semua produk yang aktif untuk ditampilkan di dropdown form
         $produks = Produk::where('is_active', true)->orderBy('nama_produk')->get(); 
-        
-        // Tampilkan view untuk form tambah pesanan, kirim data produks
         return view('admin.create_pesanan', compact('produks'));
     }
-
-    /**
-     * Menyimpan pesanan baru ke database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    
     public function store(Request $request)
     {
         $request->validate([
@@ -71,7 +57,8 @@ class PesananController extends Controller
             'telepon_pelanggan' => 'required|string|max:20',
             'tanggal_pengiriman' => 'required|date',
             'alamat_pengiriman' => 'required|string',
-            'waktu_pengiriman' => 'nullable|string|max:50',
+            'waktu_pengiriman' => 'nullable|date_format:H:i',
+            'jenis_penyajian' => 'nullable|string|max:50', // <-- VALIDASI BARU
             'catatan_khusus' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.produk_id' => 'required|exists:produks,id',
@@ -80,17 +67,13 @@ class PesananController extends Controller
 
         $totalHargaPesanan = 0;
         $itemsToStore = [];
-
         foreach ($request->input('items') as $item) {
             $produk = Produk::find($item['produk_id']);
-
             if ($produk && $produk->is_active) {
                 $hargaSatuan = $produk->harga_jual;
                 $jumlahPorsi = $item['jumlah'];
                 $subtotalItem = $hargaSatuan * $jumlahPorsi;
-
                 $totalHargaPesanan += $subtotalItem;
-
                 $itemsToStore[] = [
                     'produk_id' => $produk->id,
                     'jumlah_porsi' => $jumlahPorsi,
@@ -101,7 +84,13 @@ class PesananController extends Controller
                 return redirect()->back()->withErrors(['items' => 'Salah satu produk yang dipilih tidak valid atau tidak aktif.'])->withInput();
             }
         }
-
+        
+        $statusAwal = 'pending';
+        $tanggalPengirimanInput = Carbon::parse($request->tanggal_pengiriman); 
+        if ($tanggalPengirimanInput->isSameDay(Carbon::today())) { 
+            $statusAwal = 'diproses';
+        }
+        
         $pesanan = Pesanan::create([
             'tanggal_pesanan' => Carbon::now(),
             'tanggal_pengiriman' => $request->tanggal_pengiriman,
@@ -110,145 +99,161 @@ class PesananController extends Controller
             'telepon_pelanggan' => $request->telepon_pelanggan,
             'alamat_pengiriman' => $request->alamat_pengiriman,
             'catatan_khusus' => $request->catatan_khusus,
-            'status_pesanan' => 'pending', 
+            'jenis_penyajian' => $request->jenis_penyajian, // <-- SIMPAN DATA BARU
+            'status_pesanan' => $statusAwal, 
             'total_harga' => $totalHargaPesanan,
         ]);
 
         $pesanan->itemPesanans()->createMany($itemsToStore);
 
-        return redirect()->route('admin.pesanan.index')->with('success', 'Pesanan berhasil ditambahkan!');
+        return redirect()->route('admin.pesanan.index')->with('success', 'Pesanan berhasil ditambahkan! Status: ' . ucfirst($statusAwal));
     }
-
-    /**
-     * Menampilkan detail dari pesanan tertentu.
-     *
-     * @param  int  $id
-     * @return \Illuminate\View\View|\Illuminate\Http\Response
-     */
+    
     public function show(int $id)
     {
         $pesanan = Pesanan::with('itemPesanans.produk')->findOrFail($id);
         return view('admin.show_pesanan', compact('pesanan'));
     }
-
-    /**
-     * Menampilkan formulir untuk mengedit pesanan tertentu.
-     *
-     * @param  int  $id
-     * @return \Illuminate\View\View|\Illuminate\Http\Response
-     */
+    
     public function edit(int $id)
     {
         $pesanan = Pesanan::with('itemPesanans.produk')->findOrFail($id);
-        $produks = Produk::where('is_active', true)->orderBy('nama_produk')->get(); // Perbaikan: order by nama_produk
+        if (in_array($pesanan->status_pesanan, ['selesai', 'dibatalkan'])) {
+            return redirect()->route('admin.pesanan.show', $pesanan->id)
+                             ->with('error', 'Pesanan yang statusnya "' . $pesanan->status_pesanan . '" tidak dapat diedit lagi.');
+        }
+        $produks = Produk::where('is_active', true)->orderBy('nama_produk')->get();
         return view('admin.edit_pesanan', compact('pesanan', 'produks'));
     }
-
-    /**
-     * Memperbarui pesanan tertentu di database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    
     public function update(Request $request, int $id)
     {
+        $pesanan = Pesanan::findOrFail($id); 
+        
+        if (in_array($pesanan->status_pesanan, ['selesai', 'dibatalkan'])) {
+            return redirect()->route('admin.pesanan.show', $pesanan->id)
+                             ->with('error', 'Gagal memperbarui. Pesanan yang statusnya "' . $pesanan->status_pesanan . '" tidak dapat diedit lagi.');
+        }
+
         $request->validate([
             'nama_pelanggan' => 'required|string|max:255',
             'telepon_pelanggan' => 'required|string|max:20',
             'tanggal_pengiriman' => 'required|date',
             'alamat_pengiriman' => 'required|string',
-            'waktu_pengiriman' => 'nullable|string|max:50',
+            'waktu_pengiriman' => 'nullable|date_format:H:i',
+            'jenis_penyajian' => 'nullable|string|max:50', // <-- VALIDASI BARU
             'catatan_khusus' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.produk_id' => 'required|exists:produks,id',
             'items.*.jumlah' => 'required|integer|min:1',
         ]);
-
-        $pesanan = Pesanan::findOrFail($id);
-
+        
+        $statusSaatIni = $pesanan->status_pesanan;
+        $tanggalPengirimanSaatIniDiDB = Carbon::parse($pesanan->tanggal_pengiriman);
+        
         $totalHargaPesanan = 0;
         $newItems = [];
-
         foreach ($request->input('items') as $item) {
             $produk = Produk::find($item['produk_id']);
-
             if ($produk && $produk->is_active) {
                 $hargaSatuan = $produk->harga_jual;
                 $jumlahPorsi = $item['jumlah'];
                 $subtotalItem = $hargaSatuan * $jumlahPorsi;
-
                 $totalHargaPesanan += $subtotalItem;
-
-                $newItem = [
+                $newItems[] = [
                     'produk_id' => $produk->id,
                     'jumlah_porsi' => $jumlahPorsi,
                     'harga_satuan_saat_pesan' => $hargaSatuan,
                     'subtotal_item' => $subtotalItem,
                 ];
-                $newItems[] = $newItem;
             } else {
                 return redirect()->back()->withErrors(['items' => 'Salah satu produk yang dipilih tidak valid atau tidak aktif.'])->withInput();
             }
         }
-
-        $pesanan->update([
+        
+        $dataToUpdate = [
             'tanggal_pengiriman' => $request->tanggal_pengiriman,
             'waktu_pengiriman' => $request->waktu_pengiriman,
             'nama_pelanggan' => $request->nama_pelanggan,
             'telepon_pelanggan' => $request->telepon_pelanggan,
             'alamat_pengiriman' => $request->alamat_pengiriman,
             'catatan_khusus' => $request->catatan_khusus,
+            'jenis_penyajian' => $request->jenis_penyajian, // <-- SIMPAN DATA BARU
             'total_harga' => $totalHargaPesanan,
-        ]);
+        ];
+        
+        $newTanggalPengirimanDariRequest = Carbon::parse($request->tanggal_pengiriman);
+        $statusPotensialBaru = $statusSaatIni;
 
-        $pesanan->itemPesanans()->delete(); // Hapus item lama
-        // Buat item baru, jangan gunakan createMany langsung dari $newItems jika key berbeda
+        if ($newTanggalPengirimanDariRequest->isSameDay(Carbon::today())) {
+            if ($statusSaatIni === 'pending') {
+                $statusPotensialBaru = 'diproses';
+            }
+        } elseif ($newTanggalPengirimanDariRequest->isFuture()) {
+            if ($statusSaatIni === 'diproses' && $tanggalPengirimanSaatIniDiDB->isSameDay(Carbon::today())) {
+                $statusPotensialBaru = 'pending';
+            }
+        }
+        
+        if ($statusPotensialBaru !== $statusSaatIni) {
+            $dataToUpdate['status_pesanan'] = $statusPotensialBaru;
+        }
+
+        $pesanan->update($dataToUpdate);
+        
+        $pesanan->itemPesanans()->delete();
         foreach ($newItems as $itemData) {
             $pesanan->itemPesanans()->create($itemData);
         }
 
-
         return redirect()->route('admin.pesanan.show', $pesanan->id)->with('success', 'Pesanan berhasil diperbarui!');
     }
 
-    /**
-     * Menghapus pesanan tertentu dari database.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function destroy(int $id)
     {
         $pesanan = Pesanan::findOrFail($id);
-        $pesanan->itemPesanans()->delete(); // Hapus item terkait dulu
+        $pesanan->itemPesanans()->delete(); 
         $pesanan->delete();
-
         return redirect()->route('admin.pesanan.index')->with('success', 'Pesanan berhasil dihapus!');
     }
-
-    /**
-     * Memperbarui status pesanan melalui permintaan AJAX.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function updateStatus(Request $request, int $id)
     {
+        $validStatuses = ['pending', 'diproses', 'dikirim', 'selesai', 'dibatalkan'];
         $request->validate([
-            'status' => 'required|string|in:pending,diproses,dikirim,selesai,dibatalkan',
+            'status' => 'required|string|in:' . implode(',', $validStatuses),
         ]);
-
         try {
             $pesanan = Pesanan::findOrFail($id);
-            $pesanan->status_pesanan = $request->status;
+            $statusLama = $pesanan->status_pesanan;
+            $statusBaru = $request->status;
+            if ($statusLama == $statusBaru) {
+                return response()->json([
+                    'message' => 'Status pesanan tidak berubah (sudah ' . $statusBaru . ').', 
+                    'new_status' => $pesanan->status_pesanan
+                ], 200);
+            }
+            $allowedTransitions = [
+                'pending'    => ['diproses', 'dibatalkan'],
+                'diproses'   => ['dikirim', 'dibatalkan', 'pending'], 
+                'dikirim'    => ['selesai', 'dibatalkan', 'diproses'], 
+                'selesai'    => [], 
+                'dibatalkan' => [], 
+            ];
+            if (!isset($allowedTransitions[$statusLama]) || !in_array($statusBaru, $allowedTransitions[$statusLama])) {
+                return response()->json([
+                    'message' => "Perubahan status dari '{$statusLama}' ke '{$statusBaru}' tidak diizinkan."
+                ], 422); 
+            }
+            $pesanan->status_pesanan = $statusBaru;
             $pesanan->save();
-
-            return response()->json(['message' => 'Status pesanan berhasil diperbarui!', 'new_status' => $pesanan->status_pesanan], 200);
-
+            return response()->json([
+                'message' => 'Status pesanan berhasil diperbarui!', 
+                'new_status' => $pesanan->status_pesanan
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal memperbarui status pesanan.', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Gagal memperbarui status pesanan karena kesalahan server.'], 500);
         }
     }
 }

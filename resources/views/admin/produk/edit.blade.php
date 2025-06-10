@@ -31,6 +31,7 @@
     .komponen-item label { margin-bottom: 0; }
     .komponen-item input[type="number"] { width: 150px; margin-left: auto; }
     .error-message { color: #dc3545; font-size: 0.9em; margin-top: 5px; display: block; }
+    .alert-danger ul { margin: 0; padding-left: 20px; list-style: disc; }
 </style>
 @endpush
 
@@ -39,6 +40,18 @@
         <div class="content-header">
             <h1>Edit Produk: {{ $produk->nama_produk }}</h1>
         </div>
+
+        {{-- Menambahkan blok penampil error umum --}}
+        @if ($errors->any())
+            <div class="alert alert-danger" style="margin-bottom: 20px;">
+                <strong>Oops! Ada beberapa masalah dengan input Anda:</strong>
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <form action="{{ route('admin.produks.update', $produk->id) }}" method="POST">
             @csrf
@@ -60,7 +73,7 @@
             </div>
             <div class="form-group">
                 <label for="harga_jual">Harga Jual:</label>
-                <input type="number" id="harga_jual" name="harga_jual" value="{{ old('harga_jual', $produk->harga_jual) }}" step="0.01" min="0" required>
+                <input type="number" id="harga_jual" name="harga_jual" value="{{ old('harga_jual', $produk->harga_jual) }}" step="1" min="0" required>
                 @error('harga_jual')
                     <span class="error-message">{{ $message }}</span>
                 @enderror
@@ -78,11 +91,8 @@
                 <div id="komponen-masakan-list" style="border: 1px solid #ddd; padding:15px; border-radius:8px;">
                     @forelse ($komponenMasakans as $komponen)
                         @php
-                            // Cek apakah komponen ini ada di old input
                             $isOldChecked = old('komponen_masakan.'.$komponen->id.'.id') !== null;
-                            // Jika tidak ada di old input, cek apakah terhubung dengan produk
                             $isChecked = $isOldChecked || (old('komponen_masakan') === null && isset($produkKomponen[$komponen->id]));
-                            // Ambil nilai jumlah: prioritas old -> database -> default 1
                             $jumlahValue = old('komponen_masakan.'.$komponen->id.'.jumlah', $produkKomponen[$komponen->id] ?? 1);
                         @endphp
                         <div class="komponen-item">
@@ -93,14 +103,15 @@
                                 onchange="toggleJumlahInput(this)"
                                 {{ $isChecked ? 'checked' : '' }}>
                             <label for="komponen_{{ $komponen->id }}" style="flex-grow:1;">{{ $komponen->nama_komponen }} ({{ $komponen->satuan_dasar ?? 'unit' }})</label>
+                            {{-- Input jumlah sekarang akan di-disable oleh JS jika tidak dicentang --}}
                             <input type="number"
                                 id="jumlah_{{ $komponen->id }}"
                                 name="komponen_masakan[{{ $komponen->id }}][jumlah]"
                                 placeholder="Jumlah"
                                 min="1" step="any"
                                 value="{{ $jumlahValue }}"
-                                style="display: {{ $isChecked ? 'inline-block' : 'none' }};">
-                             @error('komponen_masakan.'.$komponen->id.'.jumlah')
+                                style="display: none;" disabled> {{-- Ditambahkan 'disabled' sebagai default --}}
+                            @error('komponen_masakan.'.$komponen->id.'.jumlah')
                                 <span class="error-message" style="display: block; width:100%; text-align:right;">{{ $message }}</span>
                             @enderror
                         </div>
@@ -108,7 +119,7 @@
                         <p>Belum ada komponen masakan yang terdaftar. Silakan <a href="{{ route('admin.komponen-masakan.create') }}">tambah di sini</a>.</p>
                     @endforelse
                 </div>
-                 @error('komponen_masakan')
+                @error('komponen_masakan')
                     <span class="error-message">{{ $message }}</span>
                 @enderror
             </div>
@@ -123,34 +134,34 @@
 
 @push('scripts')
 <script>
+    // --- FUNGSI JAVASCRIPT YANG DIMODIFIKASI ---
     function toggleJumlahInput(checkbox) {
         const jumlahInput = document.getElementById('jumlah_' + checkbox.value);
         if (jumlahInput) {
-            jumlahInput.style.display = checkbox.checked ? 'inline-block' : 'none';
-            if (!checkbox.checked) {
-                jumlahInput.value = '';
-            } else {
-                 if (jumlahInput.value === '' || parseFloat(jumlahInput.value) <= 0) {
+            if (checkbox.checked) {
+                // Aktifkan dan tampilkan input jumlah
+                jumlahInput.disabled = false;
+                jumlahInput.style.display = 'inline-block';
+                // Set nilai default jika kosong
+                if (jumlahInput.value === '' || parseFloat(jumlahInput.value) <= 0) { 
                     jumlahInput.value = 1;
                 }
+            } else {
+                // Nonaktifkan dan sembunyikan input jumlah
+                jumlahInput.disabled = true;
+                jumlahInput.style.display = 'none';
+                jumlahInput.value = ''; // Kosongkan nilainya
             }
         }
     }
 
-    // Tidak perlu inisialisasi DOMContentLoaded yang kompleks seperti di create,
-    // karena Blade sudah menangani state awal (checked dan value) berdasarkan old() dan data produk.
-    // Kita hanya perlu memastikan input jumlah yang sudah 'checked' oleh Blade menjadi terlihat.
+    // Jalankan saat halaman dimuat untuk mengatur state awal
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('#komponen-masakan-list input[type="checkbox"]').forEach(checkbox => {
-            if (checkbox.checked) {
-                const jumlahInput = document.getElementById('jumlah_' + checkbox.value);
-                if (jumlahInput) {
-                    jumlahInput.style.display = 'inline-block';
-                     if (jumlahInput.value === '' || parseFloat(jumlahInput.value) <= 0) { // Pastikan ada nilai jika dicentang
-                         jumlahInput.value = 1;
-                     }
-                }
-            }
+            // Panggil fungsi toggleJumlahInput sekali untuk setiap checkbox saat load.
+            // Ini akan menangani tampilan dan status disabled berdasarkan apakah checkbox 'checked' atau tidak.
+            // Status 'checked' sudah diatur oleh Blade berdasarkan old() input dan data dari database ($produkKomponen).
+            toggleJumlahInput(checkbox);
         });
     });
 </script>

@@ -5,24 +5,20 @@
 
 @push('styles')
 <style>
-    /* Gaya CSS yang sebelumnya ada di <style> tag di file asli dipindahkan ke sini */
-    /* ... (Salin semua CSS dari file asli Anda ke sini) ... */
+    /* ... (CSS Anda tetap sama seperti versi terakhir yang sudah benar) ... */
     .container-content { max-width: 800px; margin: 0 auto; }
     .content-header h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; font-size: 2.2em; font-weight: 700; }
     .form-group { margin-bottom: 20px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #34495e; }
-    .form-group input[type="text"], .form-group input[type="date"],
+    .form-group input[type="text"], .form-group input[type="date"], input[type="time"],
     .form-group input[type="number"], .form-group textarea, .form-group select {
         width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px;
         font-size: 1em; box-sizing: border-box; transition: border-color 0.2s;
     }
-    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus, input[type="time"]:focus {
         border-color: #007bff; outline: none; box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
     }
     textarea { resize: vertical; min-height: 80px; }
-    
-    .btn-submit { /* Sudah ada di layout, bisa disesuaikan */ }
-    .alert { /* Sudah ada di layout */ }
     .item-row {
         display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-end;
         border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; background-color: #fcfcfc;
@@ -45,7 +41,7 @@
     .item-field-label { font-weight: 600; margin-bottom: 5px; display: block; color: #34495e; font-size: 0.9em; }
     .item-col { display: flex; flex-direction: column; flex: 1; }
     .item-col.qty { flex: 0 0 100px; }
-    .item-col.remove { flex: 0 0 auto; display: flex; align-items: flex-end; justify-content: flex-end; } /* Disesuaikan agar tombol pas */
+    .item-col.remove { flex: 0 0 auto; display: flex; align-items: flex-end; justify-content: flex-end; }
     #total-price-display-edit { color: #28a745; font-weight: 700; }
 </style>
 @endpush
@@ -92,9 +88,26 @@
             </div>
 
             <div class="form-group">
-                <label for="waktu_pengiriman">Waktu Pengiriman: <small>(Contoh: 10:00 WIB / Pagi)</small></label>
-                <input type="text" id="waktu_pengiriman" name="waktu_pengiriman" value="{{ old('waktu_pengiriman', $pesanan->waktu_pengiriman) }}" placeholder="Contoh: 10:00 WIB / Pagi">
+                <label for="waktu_pengiriman">Waktu Pengiriman (Format HH:MM, Opsional):</label>
+                <input type="time" id="waktu_pengiriman" name="waktu_pengiriman" value="{{ old('waktu_pengiriman', $pesanan->waktu_pengiriman ? \Carbon\Carbon::parse($pesanan->waktu_pengiriman)->format('H:i') : '') }}">
+                @error('waktu_pengiriman') <div class="alert alert-danger">{{ $message }}</div> @enderror
             </div>
+
+            {{-- PENAMBAHAN INPUT JENIS PENYAJIAN --}}
+            <div class="form-group">
+                <label for="jenis_penyajian">Jenis Penyajian:</label>
+                <select name="jenis_penyajian" id="jenis_penyajian" class="form-control" style="width:100%;">
+                    <option value="">-- Pilih Jenis Penyajian --</option>
+                    <option value="Box" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Box' ? 'selected' : '' }}>Box / Nasi Kotak</option>
+                    <option value="Prasmanan" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Prasmanan' ? 'selected' : '' }}>Prasmanan / Lesehan</option>
+                    <option value="Tampah" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Tampah' ? 'selected' : '' }}>Tampah</option>
+                    <option value="Tumpeng" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Tumpeng' ? 'selected' : '' }}>Tumpeng</option>
+                    <option value="Gubukan" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Gubukan' ? 'selected' : '' }}>Gubukan / Stall</option>
+                    <option value="Lainnya" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
+                </select>
+                @error('jenis_penyajian') <div class="alert alert-danger">{{ $message }}</div> @enderror
+            </div>
+            {{-- AKHIR PENAMBAHAN --}}
 
             <div class="form-group">
                 <label for="alamat_pengiriman">Alamat Pengiriman:</label>
@@ -109,9 +122,19 @@
             <div class="form-group">
                 <label>Item Pesanan:</label>
                 <div id="item-fields-container" class="item-fields-container">
-                    @php $itemPesanans = old('items', $pesanan->itemPesanans->toArray()); @endphp
-                    @if (!empty($itemPesanans))
-                        @foreach ($itemPesanans as $index => $item)
+                    @php 
+                        $itemsData = old('items');
+                        if (is_null($itemsData) && $pesanan->itemPesanans) {
+                            $itemsData = [];
+                            foreach ($pesanan->itemPesanans as $p_item) {
+                                $itemsData[] = ['produk_id' => $p_item->produk_id, 'jumlah' => $p_item->jumlah_porsi];
+                            }
+                        } elseif (is_null($itemsData)) {
+                            $itemsData = [];
+                        }
+                    @endphp
+                    @if (!empty($itemsData))
+                        @foreach ($itemsData as $index => $item)
                             <div class="item-row">
                                 <div class="item-col">
                                     <label for="produk_id_{{ $index }}" class="item-field-label">Produk:</label>
@@ -130,7 +153,7 @@
                                 <div class="item-col qty">
                                     <label for="jumlah_{{ $index }}" class="item-field-label">Jumlah Porsi:</label>
                                     <input type="number" name="items[{{ $index }}][jumlah]" id="jumlah_{{ $index }}" 
-                                           value="{{ $item['jumlah_porsi'] ?? ($item['jumlah'] ?? 1) }}" 
+                                           value="{{ $item['jumlah'] ?? 1 }}" 
                                            min="1" required class="jumlah-input-edit">
                                     @error('items.'.$index.'.jumlah') <div class="alert alert-danger" style="font-size: 0.8em; padding: 5px; margin-top:2px;">{{ $message }}</div> @enderror
                                 </div>
@@ -140,7 +163,6 @@
                             </div>
                         @endforeach
                     @else
-                         {{-- Render satu baris kosong jika tidak ada old item dan tidak ada item pesanan --}}
                         <div class="item-row">
                             <div class="item-col">
                                 <label for="produk_id_0" class="item-field-label">Produk:</label>
@@ -175,16 +197,13 @@
 @endsection
 
 @push('scripts')
+    {{-- JavaScript Anda tetap sama seperti versi terakhir yang sudah benar untuk edit_pesanan.blade.php --}}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const itemFieldsContainer = document.getElementById('item-fields-container');
     const addItemBtn = document.getElementById('add-item-btn');
     const totalPriceDisplayEdit = document.getElementById('total-price-display-edit');
-    
-    // Ambil data produk untuk dropdown
-    const produksData = @json($produks);
-
-    // Inisialisasi itemIndex berdasarkan jumlah item yang sudah ada (dari old input atau database)
+    const produksData = @json($produks ?? []);
     let itemIndex = itemFieldsContainer.querySelectorAll('.item-row').length;
 
     function calculateTotalPriceEdit() {
@@ -194,10 +213,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const jumlahInput = row.querySelector('.jumlah-input-edit');
             if (produkSelect && jumlahInput && produkSelect.value) {
                 const selectedOption = produkSelect.options[produkSelect.selectedIndex];
-                const hargaJual = parseFloat(selectedOption.dataset.price || 0);
-                const jumlah = parseInt(jumlahInput.value || 0);
-                if (!isNaN(hargaJual) && !isNaN(jumlah)) {
-                    currentTotal += (hargaJual * jumlah);
+                if (selectedOption && selectedOption.dataset.price) {
+                    const hargaJual = parseFloat(selectedOption.dataset.price);
+                    const jumlah = parseInt(jumlahInput.value || 0);
+                    if (!isNaN(hargaJual) && !isNaN(jumlah)) {
+                        currentTotal += (hargaJual * jumlah);
+                    }
                 }
             }
         });
@@ -209,12 +230,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function createNewItemRow(idx) {
         const newItemRow = document.createElement('div');
         newItemRow.classList.add('item-row');
-        
         let productOptions = '<option value="">Pilih Produk</option>';
-        produksData.forEach(produk => {
-            productOptions += `<option value="${produk.id}" data-price="${produk.harga_jual}">${produk.nama_produk} (Rp ${new Intl.NumberFormat('id-ID').format(produk.harga_jual)})</option>`;
-        });
-
+        if(Array.isArray(produksData)) {
+            produksData.forEach(produk => {
+                productOptions += `<option value="${produk.id}" data-price="${produk.harga_jual}">${produk.nama_produk} (Rp ${new Intl.NumberFormat('id-ID').format(produk.harga_jual)})</option>`;
+            });
+        }
         newItemRow.innerHTML = `
             <div class="item-col">
                 <label for="produk_id_${idx}" class="item-field-label">Produk:</label>
@@ -238,7 +259,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const removeBtn = rowElement.querySelector('.btn-remove-item');
         const produkSelect = rowElement.querySelector('.produk-select-edit');
         const jumlahInput = rowElement.querySelector('.jumlah-input-edit');
-
         if (removeBtn) {
             removeBtn.addEventListener('click', function() {
                 if (itemFieldsContainer.children.length > 1) {
@@ -270,20 +290,18 @@ document.addEventListener('DOMContentLoaded', function() {
             itemFieldsContainer.appendChild(newItem);
             itemIndex++;
             updateRemoveButtonsVisibilityEdit();
-            calculateTotalPriceEdit(); // Hitung setelah tambah item baru
+            calculateTotalPriceEdit();
         });
     }
 
-    // Attach event listeners to existing rows
     itemFieldsContainer.querySelectorAll('.item-row').forEach(row => {
         attachEventListenersToRow(row);
     });
 
-    // Initial calculation and button visibility
     if(itemFieldsContainer.children.length > 0){
         calculateTotalPriceEdit();
         updateRemoveButtonsVisibilityEdit();
-    } else if (itemFieldsContainer.children.length === 0 && itemIndex === 0){ // Jika tidak ada item sama sekali, tambahkan satu baris
+    } else if (itemFieldsContainer.children.length === 0 && itemIndex === 0){
         const firstItem = createNewItemRow(itemIndex);
         itemFieldsContainer.appendChild(firstItem);
         itemIndex++;

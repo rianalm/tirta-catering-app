@@ -9,10 +9,13 @@ class Pesanan extends Model
 {
     use HasFactory;
 
-    // Pastikan ini ada dan benar
     protected $table = 'pesanans';
 
-    // ... (sisanya sama seperti sebelumnya)
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'tanggal_pesanan',
         'tanggal_pengiriman',
@@ -21,11 +24,14 @@ class Pesanan extends Model
         'telepon_pelanggan',
         'alamat_pengiriman',
         'catatan_khusus',
+        'jenis_penyajian', // <-- PENAMBAHAN
         'status_pesanan',
         'total_harga',
     ];
 
-    // Definisi relasi
+    /**
+     * Get the items for the order.
+     */
     public function itemPesanans()
     {
         return $this->hasMany(ItemPesanan::class);

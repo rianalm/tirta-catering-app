@@ -5,8 +5,7 @@
 
 @push('styles')
 <style>
-    /* Gaya CSS yang sebelumnya ada di <style> tag di file asli dipindahkan ke sini */
-    /* ... (Salin semua CSS dari file asli Anda ke sini) ... */
+    /* ... (CSS Anda tetap sama seperti versi terakhir yang sudah benar) ... */
     .container-content { max-width: 900px; margin: 0 auto; }
     .content-header h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; font-size: 2.5em; font-weight: 700; }
     .detail-section { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #e9ecef; }
@@ -15,37 +14,34 @@
         color: #34495e; font-size: 1.6em; margin-top: 0; margin-bottom: 15px;
         border-bottom: 2px solid #e9ecef; padding-bottom: 10px;
     }
-    .detail-item { display: flex; margin-bottom: 10px; }
+    .detail-item { display: flex; margin-bottom: 10px; flex-wrap: wrap; /* Menambahkan wrap untuk mobile */ }
     .detail-item strong { flex: 0 0 180px; color: #555; font-weight: 600; }
     .detail-item span { flex-grow: 1; color: #333; }
     .item-list { list-style: none; padding: 0; margin-top: 10px; }
     .item-list li {
         background-color: #f8f9fa; border: 1px solid #e0e0e0; padding: 10px 15px;
         margin-bottom: 8px; border-radius: 6px; display: flex;
-        justify-content: space-between; align-items: center;
+        justify-content: space-between; align-items: center; flex-wrap: wrap;
     }
     .item-list li span { font-weight: 500; color: #444; }
     .status-badge {
         display: inline-block; padding: 5px 10px; border-radius: 5px;
-        font-weight: 600; font-size: 0.9em; /* margin-left: 10px; Dihapus agar rata dengan teks */
-        text-transform: capitalize; /* Agar huruf pertama besar */
+        font-weight: 600; font-size: 0.9em; text-transform: capitalize;
     }
-    .status-badge.pending, .status-badge.baru { background-color: #ffe0b2; color: #e65100; } /* Ditambahkan 'pending' */
+    .status-badge.pending, .status-badge.baru { background-color: #ffe0b2; color: #e65100; }
     .status-badge.diproses { background-color: #bbdefb; color: #0d47a1; }
+    .status-badge.dikirim { background-color: #d1c4e9; color: #311b92; }
     .status-badge.selesai { background-color: #c8e6c9; color: #1b5e20; }
     .status-badge.dibatalkan { background-color: #ffcdd2; color: #b71c1c; }
-    .status-badge.dikirim { background-color: #d1c4e9; color: #311b92; } /* Contoh untuk status 'dikirim' */
-
 
     .actions { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef; }
-    /* .btn, .btn-success, .btn-info, .btn-danger sudah ada di layout */
 
     @media (max-width: 768px) {
         .container-content { padding: 20px; }
         .detail-item { flex-direction: column; align-items: flex-start; }
         .detail-item strong { flex: none; width: 100%; margin-bottom: 3px; }
         .detail-item span { width: 100%; }
-        .actions .btn { width: 100%; margin-bottom: 10px; margin-left: 0; margin-right: 0; }
+        .actions .btn { width: 100%; margin: 5px 0 !important; /* Perbaikan margin pada mobile */ }
     }
 </style>
 @endpush
@@ -56,6 +52,12 @@
             <h1>Detail Pesanan #{{ $pesanan->id }}</h1>
         </div>
 
+        @if (session('error')) {{-- Tambahkan penampil 'error' jika ada redirect dari controller edit --}}
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+        @endif
+        
         <div class="detail-section">
             <h2>Informasi Umum</h2>
             <div class="detail-item">
@@ -64,7 +66,7 @@
             </div>
             <div class="detail-item">
                 <strong>Tanggal Pesanan:</strong>
-                <span>{{ \Carbon\Carbon::parse($pesanan->tanggal_pesanan)->translatedFormat('d F Y H:i') }}</span> {{-- Menggunakan translatedFormat --}}
+                <span>{{ \Carbon\Carbon::parse($pesanan->tanggal_pesanan)->translatedFormat('d F Y, H:i') }}</span>
             </div>
             <div class="detail-item">
                 <strong>Status Pesanan:</strong>
@@ -109,7 +111,7 @@
         </div>
 
         <div class="detail-section">
-            <h2>Detail Pengiriman</h2>
+            <h2>Detail Pengiriman & Penyajian</h2>
             <div class="detail-item">
                 <strong>Tanggal Pengiriman:</strong>
                 <span>{{ \Carbon\Carbon::parse($pesanan->tanggal_pengiriman)->translatedFormat('d F Y') }}</span>
@@ -118,6 +120,14 @@
                 <strong>Waktu Pengiriman:</strong>
                 <span>{{ $pesanan->waktu_pengiriman ?? '-' }}</span>
             </div>
+            
+            {{-- PENAMBAHAN DETAIL JENIS PENYAJIAN --}}
+            <div class="detail-item">
+                <strong>Jenis Penyajian:</strong>
+                <span>{{ $pesanan->jenis_penyajian ?? '-' }}</span>
+            </div>
+            {{-- AKHIR PENAMBAHAN --}}
+
             <div class="detail-item">
                 <strong>Alamat Pengiriman:</strong>
                 <span>{{ $pesanan->alamat_pengiriman }}</span>
@@ -133,7 +143,11 @@
         </div>
 
         <div class="actions">
-            <a href="{{ route('admin.pesanan.edit', $pesanan->id) }}" class="btn btn-warning">Edit Pesanan</a>
+            {{-- Tombol Edit Kondisional --}}
+            @if (!in_array(strtolower($pesanan->status_pesanan), ['selesai', 'dibatalkan']))
+                <a href="{{ route('admin.pesanan.edit', $pesanan->id) }}" class="btn btn-warning">Edit Pesanan</a>
+            @endif
+            
             <form id="delete-form-show-{{ $pesanan->id }}" action="{{ route('admin.pesanan.destroy', $pesanan->id) }}" method="POST" style="display:inline-block;">
                 @csrf
                 @method('DELETE')
@@ -143,7 +157,7 @@
         </div>
     </div>
 
-    {{-- Modal Konfirmasi Hapus (bisa di-include dari partial jika sering digunakan) --}}
+    {{-- Modal Konfirmasi Hapus --}}
     <div id="deleteConfirmationModalShow" style="display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
         <div style="background-color: #fff; padding: 30px; border-radius: 8px; text-align: center; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
             <h3>Konfirmasi Hapus</h3>
@@ -158,7 +172,6 @@
 
 @push('scripts')
 <script>
-    // JavaScript untuk modal konfirmasi hapus di halaman show
     let pesananIdToDeleteShow = null;
     const deleteModalShow = document.getElementById('deleteConfirmationModalShow');
     const confirmDeleteBtnShow = document.getElementById('confirmDeleteBtnShow');
@@ -190,13 +203,14 @@
         });
     }
     
-    // Klik di luar modal untuk menutup
     if(deleteModalShow) {
         deleteModalShow.addEventListener('click', function(event) {
             if (event.target === deleteModalShow) {
                 closeModalShow();
             }
         });
+        const cancelBtn = deleteModalShow.querySelector('.btn-secondary');
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModalShow);
     }
 </script>
 @endpush
