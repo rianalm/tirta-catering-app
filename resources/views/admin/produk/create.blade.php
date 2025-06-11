@@ -5,7 +5,6 @@
 
 @push('styles')
 <style>
-    /* ... (CSS Anda yang sudah ada sebelumnya tetap sama) ... */
     .container-content { max-width: 700px; margin: 0 auto; }
     .content-header h1 { text-align: center; }
     .form-group { margin-bottom: 20px; }
@@ -15,21 +14,18 @@
     .form-group textarea {
         width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px;
         font-size: 1em; box-sizing: border-box;
-        transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .form-group input:focus, .form-group textarea:focus {
-        border-color: #007bff; outline: none;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-    }
-    textarea { resize: vertical; min-height: 80px; }
+    .komponen-list-wrapper { border: 1px solid #ddd; padding:15px; border-radius:8px; }
+    .komponen-list-container { max-height: 300px; overflow-y: auto; padding-right: 10px; } /* Memberi scroll jika daftar panjang */
     .komponen-item {
         display: flex; align-items: center; gap:10px; margin-bottom: 10px;
         padding: 10px; border: 1px solid #eee; border-radius: 6px;
     }
-    .komponen-item label { margin-bottom: 0; }
+    .komponen-item label { margin-bottom: 0; font-weight: 500; flex-grow: 1; cursor: pointer; }
     .komponen-item input[type="number"] { width: 150px; margin-left: auto; }
     .error-message { color: #dc3545; font-size: 0.9em; margin-top: 5px; display: block; }
     .alert-danger ul { margin: 0; padding-left: 20px; list-style: disc; }
+    #komponen-search { margin-bottom: 15px; } /* Jarak antara search box dan list */
 </style>
 @endpush
 
@@ -52,64 +48,59 @@
 
         <form action="{{ route('admin.produks.store') }}" method="POST">
             @csrf
-            
-            {{-- ... (Semua input form Anda tetap sama) ... --}}
+            {{-- ... (Input Nama, Deskripsi, Harga, Satuan tetap sama) ... --}}
             <div class="form-group">
                 <label for="nama_produk">Nama Produk:</label>
                 <input type="text" id="nama_produk" name="nama_produk" value="{{ old('nama_produk') }}" required>
-                @error('nama_produk')
-                    <span class="error-message">{{ $message }}</span>
-                @enderror
+                @error('nama_produk')<span class="error-message">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
                 <label for="deskripsi_produk">Deskripsi Produk:</label>
                 <textarea id="deskripsi_produk" name="deskripsi_produk">{{ old('deskripsi_produk') }}</textarea>
-                @error('deskripsi_produk')
-                    <span class="error-message">{{ $message }}</span>
-                @enderror 
+                @error('deskripsi_produk')<span class="error-message">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
                 <label for="harga_jual">Harga Jual:</label>
                 <input type="number" id="harga_jual" name="harga_jual" value="{{ old('harga_jual') }}" step="1" min="0" required>
-                @error('harga_jual')
-                    <span class="error-message">{{ $message }}</span>
-                @enderror
+                @error('harga_jual')<span class="error-message">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
                 <label for="satuan">Satuan (cth: porsi, paket, buah):</label>
                 <input type="text" id="satuan" name="satuan" value="{{ old('satuan') }}">
-                @error('satuan')
-                    <span class="error-message">{{ $message }}</span>
-                @enderror
+                @error('satuan')<span class="error-message">{{ $message }}</span>@enderror
             </div>
             
             <div class="form-group">
                 <label>Komponen Masakan:</label>
-                <div id="komponen-masakan-list" style="border: 1px solid #ddd; padding:15px; border-radius:8px;">
-                    @forelse ($komponenMasakans as $komponen)
-                        <div class="komponen-item">
-                            <input type="checkbox"
-                                id="komponen_{{ $komponen->id }}"
-                                name="komponen_masakan[{{ $komponen->id }}][id]"
-                                value="{{ $komponen->id }}"
-                                onchange="toggleJumlahInput(this)"
-                                {{ old('komponen_masakan.'.$komponen->id.'.id') ? 'checked' : '' }}>
-                            <label for="komponen_{{ $komponen->id }}" style="flex-grow:1;">{{ $komponen->nama_komponen }} ({{ $komponen->satuan_dasar ?? 'unit' }})</label>
-                            {{-- Input jumlah sekarang akan di-disable oleh JS jika tidak dicentang --}}
-                            <input type="number"
-                                id="jumlah_{{ $komponen->id }}"
-                                name="komponen_masakan[{{ $komponen->id }}][jumlah]"
-                                placeholder="Jumlah"
-                                min="1" step="any"
-                                value="{{ old('komponen_masakan.'.$komponen->id.'.jumlah', 1) }}"
-                                style="display: none;" disabled> {{-- Ditambahkan 'disabled' sebagai default --}}
-                            @error('komponen_masakan.'.$komponen->id.'.jumlah')
-                                <span class="error-message" style="display: block; width:100%; text-align:right;">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    @empty
-                        <p>Belum ada komponen masakan yang terdaftar. Silakan <a href="{{ route('admin.komponen-masakan.create') }}">tambah di sini</a>.</p>
-                    @endforelse
+                <div class="komponen-list-wrapper">
+                    {{-- INPUT PENCARIAN BARU --}}
+                    <input type="text" id="komponen-search" placeholder="Cari komponen masakan..." class="form-control">
+                    
+                    <div id="komponen-masakan-list" class="komponen-list-container">
+                        @forelse ($komponenMasakans as $komponen)
+                            <div class="komponen-item">
+                                <input type="checkbox"
+                                    id="komponen_{{ $komponen->id }}"
+                                    name="komponen_masakan[{{ $komponen->id }}][id]"
+                                    value="{{ $komponen->id }}"
+                                    onchange="toggleJumlahInput(this)"
+                                    {{ old('komponen_masakan.'.$komponen->id.'.id') ? 'checked' : '' }}>
+                                <label for="komponen_{{ $komponen->id }}">{{ $komponen->nama_komponen }} ({{ $komponen->satuan_dasar ?? 'unit' }})</label>
+                                <input type="number"
+                                    id="jumlah_{{ $komponen->id }}"
+                                    name="komponen_masakan[{{ $komponen->id }}][jumlah]"
+                                    placeholder="Jumlah"
+                                    min="1" step="any"
+                                    value="{{ old('komponen_masakan.'.$komponen->id.'.jumlah', 1) }}"
+                                    style="display: none;" disabled>
+                                @error('komponen_masakan.'.$komponen->id.'.jumlah')
+                                    <span class="error-message" style="display: block; width:100%; text-align:right;">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        @empty
+                            <p>Belum ada komponen masakan yang terdaftar.</p>
+                        @endforelse
+                    </div>
                 </div>
                 @error('komponen_masakan')
                     <span class="error-message">{{ $message }}</span>
@@ -126,34 +117,46 @@
 
 @push('scripts')
 <script>
-    // --- FUNGSI JAVASCRIPT YANG DIMODIFIKASI ---
     function toggleJumlahInput(checkbox) {
         const jumlahInput = document.getElementById('jumlah_' + checkbox.value);
         if (jumlahInput) {
             if (checkbox.checked) {
-                // Aktifkan dan tampilkan input jumlah
                 jumlahInput.disabled = false;
                 jumlahInput.style.display = 'inline-block';
-                // Set nilai default jika kosong
                 if (jumlahInput.value === '' || parseFloat(jumlahInput.value) <= 0) { 
                     jumlahInput.value = 1;
                 }
             } else {
-                // Nonaktifkan dan sembunyikan input jumlah
                 jumlahInput.disabled = true;
                 jumlahInput.style.display = 'none';
-                jumlahInput.value = ''; // Kosongkan nilainya
+                jumlahInput.value = '';
             }
         }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Logika saat halaman dimuat untuk menangani `old()` input
+        // Logika untuk toggle input jumlah (tetap sama)
         document.querySelectorAll('#komponen-masakan-list input[type="checkbox"]').forEach(checkbox => {
-            // Kita panggil fungsi toggleJumlahInput sekali untuk setiap checkbox saat load.
-            // Ini akan menangani tampilan dan status disabled berdasarkan apakah checkbox 'checked' atau tidak.
-            // Status 'checked' sudah diatur oleh Blade berdasarkan `old()` input.
             toggleJumlahInput(checkbox);
+        });
+
+        // --- SCRIPT BARU UNTUK FUNGSI PENCARIAN ---
+        const searchInput = document.getElementById('komponen-search');
+        const komponenItems = document.querySelectorAll('.komponen-item');
+
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+
+            komponenItems.forEach(function(item) {
+                const label = item.querySelector('label');
+                const labelText = label.textContent.toLowerCase();
+
+                if (labelText.includes(searchTerm)) {
+                    item.style.display = 'flex'; // Tampilkan jika cocok
+                } else {
+                    item.style.display = 'none'; // Sembunyikan jika tidak cocok
+                }
+            });
         });
     });
 </script>

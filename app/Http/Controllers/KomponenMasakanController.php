@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KomponenMasakan; // Pastikan ini sudah di-import
+use App\Models\KomponenMasakan;
 use Illuminate\Http\Request;
 
 class KomponenMasakanController extends Controller
@@ -10,16 +10,24 @@ class KomponenMasakanController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request) // Tambahkan Request $request
     {
+        // Ambil input pencarian dari request
         $search = $request->input('search');
-        $komponenMasakans = KomponenMasakan::query()
-                            ->when($search, function($query, $search) {
-                                $query->where('nama_komponen', 'like', '%' . $search . '%');
-                            })
-                            ->orderBy('nama_komponen', 'asc') // Urutkan berdasarkan nama
-                            ->paginate(10); // Paginate the results
 
+        // Mulai query
+        $query = KomponenMasakan::query();
+
+        // Jika ada input pencarian, tambahkan kondisi 'where'
+        if ($search) {
+            $query->where('nama_komponen', 'like', '%' . $search . '%');
+        }
+
+        // Lanjutkan dengan pengurutan dan paginasi
+        $komponenMasakans = $query->orderBy('nama_komponen', 'asc')
+                                  ->paginate(10);
+
+        // Kirim data dan variabel search ke view
         return view('admin.komponen_masakan.index', compact('komponenMasakans', 'search'));
     }
 
@@ -51,12 +59,10 @@ class KomponenMasakanController extends Controller
 
     /**
      * Display the specified resource.
-     * Tidak akan digunakan secara langsung untuk KomponenMasakan, tapi tetap dipertahankan.
      */
     public function show(KomponenMasakan $komponenMasakan)
     {
-        // return view('admin.komponen_masakan.show', compact('komponenMasakan'));
-        abort(404); // Kita tidak perlu halaman show terpisah untuk komponen masakan
+        abort(404); // Kita tidak perlu halaman show terpisah
     }
 
     /**
@@ -94,10 +100,9 @@ class KomponenMasakanController extends Controller
             $komponenMasakan->delete();
             return redirect()->route('admin.komponen-masakan.index')->with('success', 'Komponen masakan berhasil dihapus.');
         } catch (\Illuminate\Database\QueryException $e) {
-            // Periksa apakah error disebabkan oleh foreign key constraint
             if ($e->getCode() == "23000") { // Kode SQLSTATE untuk integrity constraint violation
                 return redirect()->route('admin.komponen-masakan.index')
-                                 ->with('error', 'Tidak dapat menghapus komponen masakan karena sedang digunakan oleh beberapa produk.');
+                                 ->with('error', 'Gagal menghapus! Komponen ini masih digunakan oleh beberapa produk.');
             }
             return redirect()->route('admin.komponen-masakan.index')->with('error', 'Terjadi kesalahan saat menghapus komponen masakan.');
         }

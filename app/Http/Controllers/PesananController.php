@@ -256,4 +256,17 @@ class PesananController extends Controller
             return response()->json(['message' => 'Gagal memperbarui status pesanan karena kesalahan server.'], 500);
         }
     }
+    public function operasionalIndex(Request $request)
+    {
+        $tanggalFilter = $request->query('filter_tanggal_pengiriman', Carbon::today()->toDateString());
+
+        $query = Pesanan::with(['itemPesanans', 'itemPesanans.produk'])
+                        ->whereDate('tanggal_pengiriman', $tanggalFilter)
+                        ->whereNotIn('status_pesanan', ['selesai', 'dibatalkan'])
+                        ->orderBy('waktu_pengiriman', 'asc');
+
+        $pesanans = $query->get();
+
+        return view('admin.pesanan_operasional', compact('pesanans', 'tanggalFilter'));
+    }
 }
