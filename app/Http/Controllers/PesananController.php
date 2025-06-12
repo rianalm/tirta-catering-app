@@ -7,6 +7,7 @@ use App\Models\Pesanan;
 use App\Models\Produk;
 use App\Models\ItemPesanan;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PesananController extends Controller
 {
@@ -267,6 +268,88 @@ class PesananController extends Controller
 
         $pesanans = $query->get();
 
-        return view('admin.pesanan_operasional', compact('pesanans', 'tanggalFilter'));
+        // --- PERUBAHAN DI SINI ---
+        // Menggunakan path view yang baru dengan notasi titik.
+        return view('admin.pesanan_operasional.index', compact('pesanans', 'tanggalFilter'));
     }
-}
+    public function operasionalShow(Pesanan $pesanan)
+    {
+        // Kita bisa langsung mengirim data pesanan ke view baru
+        // Eager load relasi jika belum ter-load
+        $pesanan->load(['itemPesanans', 'itemPesanans.produk']);
+
+        return view('admin.pesanan_operasional.show', compact('pesanan'));
+    }
+
+    public function generateWorksheetPdf(Pesanan $pesanan)
+    {
+        // Pastikan relasi sudah ter-load
+        $pesanan->load(['itemPesanans', 'itemPesanans.produk']);
+
+        // Render view khusus PDF dengan data pesanan
+        $pdf = PDF::loadView('admin.pesanan_operasional.pdf_worksheet', compact('pesanan'));
+
+        // Tampilkan PDF di browser (stream) atau paksa unduh (download)
+        // Kita gunakan stream agar bisa dilihat dulu sebelum di-save
+        return $pdf->stream('worksheet-pesanan-'.$pesanan->id.'.pdf');
+    }
+
+    // --- METHOD BARU UNTUK UPDATE BIAYA INVOICE ---
+    public function editInvoice(Pesanan $pesanan)
+    {
+        return view('admin.pesanan.invoice_edit', compact('pesanan'));
+    }
+
+    // METHOD BARU UNTUK MENYIMPAN DATA INVOICE
+    public function updateInvoice(Request $request, Pesanan $pesanan)
+    {
+        $request->validate([
+            'ongkir'       => ['nullable', 'numeric', 'min:0'],
+            'biaya_lain'   => ['nullable', 'numeric', 'min:0'],
+            'pajak_persen' => ['nullable', 'numeric', 'min:0'], // Validasi persentase pajak
+        ]);
+
+        $subtotal = $pesanan->total_harga;
+        $ongkir = $request->ongkir ?? 0;
+        $biaya_lain = $request->biaya_lain ?? 0;
+        $pajak_persen = $request->pajak_persen ?? 0;
+
+        // Hitung nominal pajak dari subtotal
+        $nominal_pajak = ($subtotal * $pajak_persen) / 100;
+
+        // Hitung grand total
+        $grand_total = $subtotal + $nominal_pajak + $ongkir + $biaya_lain;
+
+        // Update data pesanan di database
+        $pesanan->update([
+            'ongkir'       => $ongkir,
+            'biaya_lain'   => $biaya_lain,
+            'pajak_persen' => $pajak_persen,
+            'pajak'        => $nominal_pajak, // Simpan hasil perhitungannya
+            'grand_total'  => $grand_total,
+        ]);
+
+        return redirect()->route('admin.pesanan.show', $pesanan->id)->with('success', 'Rincian biaya invoice berhasil diperbarui.');
+    }
+
+    public function generateInvoicePdf(Pesanan $pesanan)
+    {
+        // Pastikan semua relasi data yang dibutuhkan sudah ter-load
+        $pesanan->load(['itemPesanans', 'itemPesanans.produk']);
+
+        // Data perusahaan Anda, bisa juga diambil dari database atau file config
+        $companyInfo = [
+            'name' => 'Tirta Catering',
+            'address' => 'Jl. Kh Hasyim Ashari No. 27, Buaran Indah, Kota Tangerang',
+            'phone' => '0812-1206-9998',
+            'email' => 'tirtacatering.99@gmail.com',
+            'rekening' => 'Bank BCC - 1234567890 a/n Tirta Catering'
+        ];
+
+        // Render view khusus PDF dengan data yang diperlukan
+        $pdf = PDF::loadView('admin.pesanan.pdf_invoice', compact('pesanan', 'companyInfo'));
+
+        // Tampilkan PDF di browser
+        return $pdf->stream('invoice-'.$pesanan->id.'-'.$pesanan->nama_pelanggan.'.pdf');
+    }
+} 

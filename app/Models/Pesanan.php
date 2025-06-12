@@ -24,10 +24,19 @@ class Pesanan extends Model
         'telepon_pelanggan',
         'alamat_pengiriman',
         'catatan_khusus',
-        'jenis_penyajian', // <-- PENAMBAHAN
+        'jenis_penyajian',
         'status_pesanan',
-        'total_harga',
+        'total_harga',     
+        
+        // --- KOLOM INI TETAP ADA DI MODEL UNTUK FITUR INVOICE NANTI ---
+        'ongkir',
+        'biaya_lain',
+        'pajak',
+        'grand_total',
+        'pajak_persen', 
+       
     ];
+
 
     /**
      * Get the items for the order.

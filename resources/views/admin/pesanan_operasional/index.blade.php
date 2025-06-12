@@ -1,4 +1,4 @@
-{{-- resources/views/admin/pesanan_operasional.blade.php --}}
+{{-- resources/views/admin/pesanan_operasional/index.blade.php --}}
 @extends('layouts.admin')
 @section('title', 'Daftar Pesanan Harian')
 
@@ -14,7 +14,7 @@
     }
     .operational-table th, .operational-table td {
         border: 1px solid #ddd;
-        padding: 10px; /* Padding disesuaikan */
+        padding: 8px;
         vertical-align: top;
         word-wrap: break-word; /* Agar teks panjang bisa turun baris */
     }
@@ -31,20 +31,20 @@
     }
     .action-icons {
         text-align: center;
-        width: 100px; /* Lebar tetap untuk kolom aksi */
+        width: 120px; /* Lebar disesuaikan untuk 3 tombol */
     }
-    .action-icons .status-action-btn {
+    .action-icons .status-action-btn, .action-icons .detail-btn { /* Menambahkan .detail-btn */
         color: #333;
         text-decoration: none;
         margin: 0 8px;
-        font-size: 1.5em; /* Ukuran ikon diperbesar sedikit */
+        font-size: 1.4em;
         background: none;
         border: none;
         cursor: pointer;
         padding: 5px;
         transition: transform 0.2s ease;
     }
-    .action-icons .status-action-btn:hover {
+    .action-icons .status-action-btn:hover, .action-icons .detail-btn:hover {
         transform: scale(1.2); /* Efek hover pada ikon */
     }
     .filter-container {
@@ -110,7 +110,7 @@
                         <td class="item-list-cell">
                             <ul>
                                 @foreach($pesanan->itemPesanans as $item)
-                                    <li>{{ $item->jumlah_porsi }}x {{ $item->produk->nama_produk }}</li>
+                                    <li>{{ $item->jumlah_porsi }}x {{ $item->produk->nama_produk }} (Rp {{ number_format($item->subtotal_item, 0, ',', '.') }})</li>
                                 @endforeach
                             </ul>
                             <hr style="margin: 5px 0;">
@@ -122,6 +122,11 @@
                             <strong>Catatan:</strong> {{ $pesanan->catatan_khusus ?? '-' }}
                         </td>
                         <td class="action-icons">
+                            {{-- MODIFIKASI: Link ke route detail operasional --}}
+                            <a href="{{ route('admin.pesanan.operasional.show', $pesanan->id) }}" title="Lihat Detail" class="detail-btn">
+                                <i class="fas fa-eye" style="color: #007bff;"></i>
+                            </a>
+
                             @if($pesanan->status_pesanan == 'diproses')
                                 <button title="Tandai Sudah Dikirim" class="status-action-btn" data-id="{{ $pesanan->id }}" data-status="dikirim"><i class="fas fa-truck" style="color: #17a2b8;"></i></button>
                             @endif

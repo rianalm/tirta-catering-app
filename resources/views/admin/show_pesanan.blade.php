@@ -28,13 +28,65 @@
         display: inline-block; padding: 5px 10px; border-radius: 5px;
         font-weight: 600; font-size: 0.9em; text-transform: capitalize;
     }
+
+     .invoice-section {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 8px;
+    }
+    .invoice-details {
+        margin-top: 15px;
+    }
+    .price-summary { text-align: right; }
+    .price-summary .detail-item {
+        justify-content: flex-end;
+        gap: 20px;
+    }
+    .price-summary .grand-total {
+        font-size: 1.2em;
+        font-weight: bold;
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+    .form-invoice .form-group {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .form-invoice .form-group input {
+        width: 50%;
+        text-align: right;
+    }
+
     .status-badge.pending, .status-badge.baru { background-color: #ffe0b2; color: #e65100; }
     .status-badge.diproses { background-color: #bbdefb; color: #0d47a1; }
     .status-badge.dikirim { background-color: #d1c4e9; color: #311b92; }
     .status-badge.selesai { background-color: #c8e6c9; color: #1b5e20; }
     .status-badge.dibatalkan { background-color: #ffcdd2; color: #b71c1c; }
 
-    .actions { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef; }
+    .actions {
+        display: flex;
+        justify-content: center; /* Tombol di tengah */
+        align-items: center;
+        gap: 10px; /* Jarak antar tombol */
+        flex-wrap: wrap;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .actions .btn-sm {
+        width: 40px; /* Sedikit lebih besar untuk ikon */
+        height: 36px;
+    }
+
+    .actions .btn-back {
+        padding: 8px 15px; /* Tombol kembali dengan teks */
+    }
 
     @media (max-width: 768px) {
         .container-content { padding: 20px; }
@@ -52,11 +104,8 @@
             <h1>Detail Pesanan #{{ $pesanan->id }}</h1>
         </div>
 
-        @if (session('error')) {{-- Tambahkan penampil 'error' jika ada redirect dari controller edit --}}
-        <div class="alert alert-danger">
-            {{ session('error') }}
-        </div>
-        @endif
+        @if (session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
+        @if (session('error')) <div class="alert alert-danger">{{ session('error') }}</div> @endif
         
         <div class="detail-section">
             <h2>Informasi Umum</h2>
@@ -142,18 +191,33 @@
             </div>
         </div>
 
-        <div class="actions">
-            {{-- Tombol Edit Kondisional --}}
+        <div class="detail-section invoice-section">
+            <h2>Rincian Biaya & Invoice</h2>
+            <div class="price-summary">
+                <div class="detail-item"><strong>Subtotal Item:</strong><span>Rp {{ number_format($pesanan->total_harga, 0, ',', '.') }}</span></div>
+                <div class="detail-item"><strong>Ongkos Kirim:</strong><span>Rp {{ number_format($pesanan->ongkir, 0, ',', '.') }}</span></div>
+                <div class="detail-item"><strong>Service Charge / Biaya Lain:</strong><span>Rp {{ number_format($pesanan->biaya_lain, 0, ',', '.') }}</span></div>
+                <div class="detail-item"><strong>Pajak ({{ $pesanan->pajak_persen > 0 ? $pesanan->pajak_persen.'%' : 'Nominal' }}):</strong><span>Rp {{ number_format($pesanan->pajak, 0, ',', '.') }}</span></div>
+                <div class="detail-item grand-total"><strong>GRAND TOTAL:</strong><span>Rp {{ number_format($pesanan->grand_total, 0, ',', '.') }}</span></div>
+            </div>
+            <div style="display: flex; justify-content: flex-end;">
+                <a href="{{ route('admin.pesanan.invoice.edit', $pesanan->id) }}" class="btn btn-primary" title="Lengkapi/Edit Rincian Invoice">
+                    <i class="fas fa-file-invoice-dollar" style="margin-right: 8px;"></i> Lengkapi
+                </a>
+            </div>
+        </div>
+    <div class="actions">
+            <a href="{{ route('admin.pesanan.invoice.pdf', $pesanan->id) }}" target="_blank" class="btn btn-dark" title=" Cetak Invoice" style="background-color:rgba(223, 25, 18, 0.8);">
+                <i class="fas fa-print"></i> Cetak
+            </a>
+            
             @if (!in_array(strtolower($pesanan->status_pesanan), ['selesai', 'dibatalkan']))
-                <a href="{{ route('admin.pesanan.edit', $pesanan->id) }}" class="btn btn-warning">Edit Pesanan</a>
+                <a href="{{ route('admin.pesanan.edit', $pesanan->id) }}" class="btn btn-warning" title="Edit Detail Pesanan">
+                    <i class="fas fa-pencil-alt"></i> Edit Pesanan
+                </a>
             @endif
             
-            <form id="delete-form-show-{{ $pesanan->id }}" action="{{ route('admin.pesanan.destroy', $pesanan->id) }}" method="POST" style="display:inline-block;">
-                @csrf
-                @method('DELETE')
-                <button type="button" class="btn btn-danger delete-btn-show" data-id="{{ $pesanan->id }}">Hapus Pesanan</button>
-            </form>
-            <a href="{{ route('admin.pesanan.index') }}" class="btn btn-secondary" style="margin-left:10px;">Kembali ke Daftar</a>
+            <a href="{{ route('admin.pesanan.index') }}" class="btn btn-secondary btn-back">Kembali</a>
         </div>
     </div>
 
