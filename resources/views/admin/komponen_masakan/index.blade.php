@@ -4,7 +4,6 @@
 
 @push('styles')
 <style>
-    /* Styling dasar untuk tabel dan tombol aksi, mirip dengan halaman lain */
     .actions .btn-sm {
         width: 38px;
         height: 32px;
@@ -97,10 +96,20 @@
         background-color: #e9ecef;
         border-color: #dee2e6;
     }
-    /* --- AKHIR CSS PAGINASI --- */
-    
-    /* Modal Styling (tetap sama) */
-    .modal { display: none; /* ... */ }
+     .custom-modal {
+        display: none; position: fixed; z-index: 1050; left: 0; top: 0;
+        width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);
+        justify-content: center; align-items: center; opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+    .custom-modal.show { opacity: 1; display: flex !important; }
+    .custom-modal-content {
+        background-color: #fefefe; margin: auto; padding: 30px; border-radius: 12px;
+        width: 90%; max-width: 400px; text-align: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        transform: translateY(-20px); transition: transform 0.3s ease-in-out;
+    }
+    .custom-modal.show .custom-modal-content { transform: translateY(0); }
 </style>
 @endpush
 
@@ -168,16 +177,20 @@
                 </tbody>
             </table>
         </div>
-
-        {{-- PERUBAHAN: Membungkus paginasi dengan container yang benar --}}
         <div class="pagination-container">
             {{ $komponenMasakans->appends(request()->query())->links() }}
         </div>
     </div>
 
-    {{-- ... (Modal dan Script Anda tetap sama) ... --}}
-    <div id="deleteConfirmationModal" class="modal">
-        {{-- ... --}}
+    <div id="deleteConfirmationModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <h3>Konfirmasi Hapus</h3>
+            <p>Apakah Anda yakin ingin menghapus komponen ini?</p>
+            <div class="modal-buttons">
+                <button type="button" class="btn-cancel btn btn-secondary">Batal</button>
+                <button type="button" class="btn-confirm btn-danger" id="confirmDeleteBtn">Hapus</button>
+            </div>
+        </div>
     </div>
 @endsection
 

@@ -112,6 +112,15 @@
         padding-bottom: 5px;
         border-bottom: 1px solid #eee;
     }
+    .chart-container {
+        background-color: #ffffff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-top: 30px;
+        position: relative; /* Diperlukan agar chart bisa responsif di dalamnya */
+        height: 400px; /* Atur tinggi tetap, misalnya 400px. Anda bisa sesuaikan angkanya. */
+    }
 </style>
 @endpush
 
@@ -158,6 +167,11 @@
                 <span class="stat-number">{{ $totalProduk ?? 0 }}</span>
                 <a href="{{ route('admin.produks.index') }}" class="stat-link">Kelola Produk</a>
             </div>
+        </div>
+
+        <div class="chart-container">
+            <h3 class="section-title" style="margin-top:0;">Grafik Pesanan (7 Hari Terakhir)</h3>
+            <canvas id="weeklyOrdersChart"></canvas>
         </div>
 
         @if(isset($pesananHariIniRingkas_Aktif) && $pesananHariIniRingkas_Aktif->isNotEmpty())
@@ -228,6 +242,51 @@
 
 @push('scripts')
 <script>
-    // console.log('Dashboard page specific JS loaded');
+    const chartLabels = @json($chartLabels ?? []);
+    const chartData = @json($chartData ?? []);
+    const ctx = document.getElementById('weeklyOrdersChart');
+
+    if (ctx && chartLabels.length > 0) {
+        new Chart(ctx, {
+            type: 'bar', // Tipe grafik: bar, line, pie, dll.
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Jumlah Pesanan',
+                    data: chartData,
+                    backgroundColor: 'rgba(23, 162, 184, 0.6)', // Warna bar (biru info)
+                    borderColor: 'rgba(23, 162, 184, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            // Pastikan sumbu Y hanya menampilkan angka bulat
+                            stepSize: 1, 
+                            callback: function(value) {if (value % 1 === 0) {return value;}}
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false // Sembunyikan legenda di atas
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` Jumlah Pesanan: ${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 </script>
 @endpush
