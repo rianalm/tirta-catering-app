@@ -1,4 +1,3 @@
-{{-- resources/views/admin/pesanan_operasional/index.blade.php --}}
 @extends('layouts.admin')
 @section('title', 'Daftar Pesanan Harian')
 

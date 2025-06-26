@@ -1,5 +1,4 @@
 @extends('layouts.admin')
-
 @section('title', 'Tambah User Baru')
 
 @push('styles')

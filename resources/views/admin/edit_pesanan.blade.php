@@ -1,11 +1,7 @@
-{{-- resources/views/admin/edit_pesanan.blade.php --}}
 @extends('layouts.admin')
-
 @section('title', 'Edit Pesanan #' . $pesanan->id)
-
 @push('styles')
 <style>
-    /* ... (CSS Anda tetap sama seperti versi terakhir yang sudah benar) ... */
     .container-content { max-width: 800px; margin: 0 auto; }
     .content-header h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; font-size: 2.2em; font-weight: 700; }
     .form-group { margin-bottom: 20px; }
@@ -99,7 +95,8 @@
                 <select name="jenis_penyajian" id="jenis_penyajian" class="form-control" style="width:100%;">
                     <option value="">-- Pilih Jenis Penyajian --</option>
                     <option value="Box" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Box' ? 'selected' : '' }}>Box / Nasi Kotak</option>
-                    <option value="Prasmanan" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Prasmanan' ? 'selected' : '' }}>Prasmanan / Lesehan</option>
+                    <option value="Lesehan" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Lesehan' ? 'selected' : '' }}>Lesehan</option>
+                    <option value="Prasmanan" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Prasmanan' ? 'selected' : '' }}>Prasmanan</option>
                     <option value="Tampah" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Tampah' ? 'selected' : '' }}>Tampah</option>
                     <option value="Tumpeng" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Tumpeng' ? 'selected' : '' }}>Tumpeng</option>
                     <option value="Gubukan" {{ old('jenis_penyajian', $pesanan->jenis_penyajian) == 'Gubukan' ? 'selected' : '' }}>Gubukan / Stall</option>

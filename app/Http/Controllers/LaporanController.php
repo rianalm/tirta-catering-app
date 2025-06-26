@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Pesanan;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LaporanController extends Controller
 {
@@ -47,30 +48,29 @@ class LaporanController extends Controller
     }
     public function kebutuhanDapur(Request $request)
     {
-        // Secara default, laporan menampilkan kebutuhan untuk HARI ESOK.
         $targetDate = $request->input('tanggal', Carbon::tomorrow()->toDateString());
 
-        // 1. Ambil semua pesanan untuk tanggal target yang statusnya aktif
         $pesanans = Pesanan::with('itemPesanans.produk.komponenMasakans')
                            ->whereDate('tanggal_pengiriman', $targetDate)
                            ->whereNotIn('status_pesanan', ['selesai', 'dibatalkan'])
                            ->get();
         
-        // 2. Agregasi (jumlahkan) semua kebutuhan komponen
-        $kebutuhanKomponen = new Collection();
+        // --- PERBAIKAN LOGIKA AGREGRASI ---
+        
+        // Gunakan array PHP biasa, bukan Collection
+        $kebutuhanKomponen = []; 
 
         foreach ($pesanans as $pesanan) {
             foreach ($pesanan->itemPesanans as $item) {
-                // Jumlah porsi untuk item ini
                 $jumlahPorsiItem = $item->jumlah_porsi;
                 
-                // Loop melalui setiap komponen yang dibutuhkan oleh produk ini
                 foreach ($item->produk->komponenMasakans as $komponen) {
                     $id = $komponen->id;
                     $jumlahDibutuhkan = $jumlahPorsiItem * $komponen->pivot->jumlah_per_porsi;
 
-                    if ($kebutuhanKomponen->has($id)) {
-                        // Jika komponen sudah ada di daftar, tambahkan jumlahnya
+                    // Gunakan isset() untuk memeriksa array biasa
+                    if (isset($kebutuhanKomponen[$id])) {
+                        // Baris ini sekarang akan bekerja dengan benar pada array biasa
                         $kebutuhanKomponen[$id]['total_kebutuhan'] += $jumlahDibutuhkan;
                     } else {
                         // Jika belum ada, buat entri baru
@@ -84,9 +84,56 @@ class LaporanController extends Controller
             }
         }
         
-        // Urutkan berdasarkan nama komponen
-        $kebutuhanKomponen = $kebutuhanKomponen->sortBy('nama_komponen');
+        // Urutkan array berdasarkan nama komponen
+        uasort($kebutuhanKomponen, function ($a, $b) {
+            return $a['nama_komponen'] <=> $b['nama_komponen'];
+        });
+        
+        // --- AKHIR PERBAIKAN ---
 
         return view('admin.laporan.kebutuhan_dapur', compact('kebutuhanKomponen', 'targetDate'));
+    }
+
+    public function generateKebutuhanDapurPdf(Request $request)
+    {
+        $targetDate = $request->input('tanggal', Carbon::tomorrow()->toDateString());
+
+        $pesanans = Pesanan::with('itemPesanans.produk.komponenMasakans')
+                           ->whereDate('tanggal_pengiriman', $targetDate)
+                           ->whereNotIn('status_pesanan', ['selesai', 'dibatalkan'])
+                           ->get();
+        
+        $kebutuhanKomponen = []; 
+
+        foreach ($pesanans as $pesanan) {
+            foreach ($pesanan->itemPesanans as $item) {
+                $jumlahPorsiItem = $item->jumlah_porsi;
+                
+                foreach ($item->produk->komponenMasakans as $komponen) {
+                    $id = $komponen->id;
+                    $jumlahDibutuhkan = $jumlahPorsiItem * $komponen->pivot->jumlah_per_porsi;
+
+                    if (isset($kebutuhanKomponen[$id])) {
+                        $kebutuhanKomponen[$id]['total_kebutuhan'] += $jumlahDibutuhkan;
+                    } else {
+                        $kebutuhanKomponen[$id] = [
+                            'nama_komponen'   => $komponen->nama_komponen,
+                            'total_kebutuhan' => $jumlahDibutuhkan,
+                            'satuan_dasar'    => $komponen->satuan_dasar,
+                        ];
+                    }
+                }
+            }
+        }
+        
+        uasort($kebutuhanKomponen, function ($a, $b) {
+            return $a['nama_komponen'] <=> $b['nama_komponen'];
+        });
+
+        // Render view khusus PDF dengan data yang sudah diolah
+        $pdf = PDF::loadView('admin.laporan.pdf_kebutuhan_dapur', compact('kebutuhanKomponen', 'targetDate'));
+        
+        // Tampilkan PDF di browser
+        return $pdf->stream('laporan-kebutuhan-dapur-'.$targetDate.'.pdf');
     }
 }

@@ -46,12 +46,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         ->name('pesanan.operasional.pdf')
         ->middleware(['role:admin|tim_dapur|tim_packing|driver']);
     
-    // Laporan Kebutuhan Dapur untuk Admin dan Tim Dapur
     Route::get('laporan/kebutuhan-dapur', [LaporanController::class, 'kebutuhanDapur'])
         ->name('laporan.dapur')
         ->middleware(['role:admin|tim_dapur|tim_packing']);
 
-    // Aksi update status bisa diakses oleh semua peran yang relevan
+    Route::get('laporan/kebutuhan-dapur/pdf', [LaporanController::class, 'generateKebutuhanDapurPdf'])
+        ->name('laporan.dapur.pdf')
+        ->middleware(['role:admin|tim_dapur|tim_packing']);
+
     Route::post('/pesanan/{pesanan}/update-status', [PesananController::class, 'updateStatus'])
         ->name('pesanan.updateStatus')
         ->middleware(['role:admin|tim_dapur|tim_packing|driver']);
@@ -75,6 +77,4 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::get('pesanan/{pesanan}/invoice/pdf', [PesananController::class, 'generateInvoicePdf'])->name('pesanan.invoice.pdf');
         
     });
-    // --- AKHIR GROUP KHUSUS ADMIN ---
-
 });

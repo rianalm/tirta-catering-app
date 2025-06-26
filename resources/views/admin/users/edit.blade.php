@@ -1,7 +1,5 @@
 @extends('layouts.admin')
-
 @section('title', 'Edit User - ' . $user->name)
-
 @push('styles')
 <style>
     .container-content { max-width: 700px; margin: 0 auto; }

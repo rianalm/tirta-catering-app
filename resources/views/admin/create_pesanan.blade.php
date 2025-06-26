@@ -1,6 +1,4 @@
-{{-- resources/views/admin/create_pesanan.blade.php --}}
 @extends('layouts.admin')
-
 @section('title', 'Tambah Pesanan Baru')
 
 @push('styles')
@@ -145,7 +143,8 @@
                 <select name="jenis_penyajian" id="jenis_penyajian">
                     <option value="" selected>-- Pilih Jenis Penyajian --</option>
                     <option value="Box" {{ old('jenis_penyajian') == 'Box' ? 'selected' : '' }}>Box / Nasi Kotak</option>
-                    <option value="Prasmanan" {{ old('jenis_penyajian') == 'Prasmanan' ? 'selected' : '' }}>Prasmanan / Lesehan</option>
+                    <option value="Lesehan" {{ old('jenis_penyajian') == 'Lesehan' ? 'selected' : '' }}>Lesehan</option>
+                    <option value="Prasmanan" {{ old('jenis_penyajian') == 'Prasmanan' ? 'selected' : '' }}>Prasmanan</option>
                     <option value="Tampah" {{ old('jenis_penyajian') == 'Tampah' ? 'selected' : '' }}>Tampah</option>
                     <option value="Tumpeng" {{ old('jenis_penyajian') == 'Tumpeng' ? 'selected' : '' }}>Tumpeng</option>
                     <option value="Gubukan" {{ old('jenis_penyajian') == 'Gubukan' ? 'selected' : '' }}>Gubukan / Stall</option>

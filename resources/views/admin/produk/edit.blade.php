@@ -1,8 +1,5 @@
-{{-- resources/views/admin/produk/edit.blade.php --}}
 @extends('layouts.admin')
-
 @section('title', 'Edit Produk - ' . $produk->nama_produk)
-
 @push('styles')
 <style>
     /* ... (Gaya CSS sama seperti di create.blade.php) ... */

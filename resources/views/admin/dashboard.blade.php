@@ -1,95 +1,17 @@
-{{-- resources/views/admin/dashboard.blade.php --}}
 @extends('layouts.admin')
-
 @section('title', 'Admin Dashboard')
 
 @push('styles')
 <style>
-    /* Gaya Baru untuk Stat Card */
-    .stat-card-container {
-        display: flex;
-        gap: 20px; /* Jarak antar kartu */
-        flex-wrap: wrap; /* Kartu akan turun baris jika tidak muat */
-        margin-bottom: 30px;
-    }
-
-    .stat-card {
-        background-color: #fff; /* Warna dasar putih untuk kartu */
-        border-radius: 10px;    /* Sudut lebih melengkung */
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Efek bayangan yang lebih halus */
-        padding: 25px;
-        flex: 1; /* Agar kartu mengisi ruang yang sama */
-        min-width: 230px; /* Lebar minimum kartu agar tidak terlalu kecil */
-        transition: box-shadow 0.3s ease, transform 0.3s ease; /* Transisi untuk efek hover */
-        border-left: 5px solid transparent; /* Placeholder untuk border aksen */
-    }
-
-    .stat-card:hover {
-        box-shadow: 0 6px 16px rgba(0,0,0,0.12); /* Bayangan lebih kuat saat hover */
-        transform: translateY(-3px); /* Sedikit terangkat saat hover */
-    }
-
-    .stat-card h3 {
-        margin-top: 0;
-        margin-bottom: 12px; /* Sedikit dikurangi */
-        font-size: 1.1em;    /* Sedikit lebih kecil agar tidak terlalu dominan */
-        color: #555;      /* Warna teks judul kartu */
-        font-weight: 600; /* Sedikit lebih tebal */
-    }
-
-    .stat-card .stat-number {
-        font-size: 2.2em; /* Ukuran angka statistik disesuaikan */
-        font-weight: 700; /* Lebih tebal */
-        margin-bottom: 12px;
-        display: block;
-    }
-
-    .stat-card .stat-link {
-        font-size: 0.9em;
-        text-decoration: none;
-        font-weight: 500;
-        /* Warna link akan di-override per jenis kartu */
-    }
-    .stat-card .stat-link:hover {
-        text-decoration: underline;
-    }
-
-    /* Warna Spesifik dan Aksen untuk Setiap Kartu */
-    .stat-card.orders-today {
-        border-left-color: #28a745; /* Aksen hijau */
-    }
-    .stat-card.orders-today .stat-number { color: #28a745; }
-    .stat-card.orders-today .stat-link { color: #28a745; }
-
-    .stat-card.orders-tomorrow {
-        border-left-color: #ffc107; /* Aksen kuning/oranye */
-    }
-    .stat-card.orders-tomorrow .stat-number { color: #ff9800; } /* Warna angka lebih pekat */
-    .stat-card.orders-tomorrow .stat-link { color: #ff9800; }
-
-    .stat-card.orders-completed {
-        border-left-color: #17a2b8; /* Aksen biru info */
-    }
-    .stat-card.orders-completed .stat-number { color: #17a2b8; }
-    .stat-card.orders-completed .stat-link { color: #17a2b8; }
-
-    .stat-card.products-total {
-        border-left-color: #6f42c1; /* Aksen ungu */
-    }
-    .stat-card.products-total .stat-number { color: #6f42c1; }
-    .stat-card.products-total .stat-link { color: #6f42c1; }
-    /* Akhir Gaya Baru Stat Card */
-
-    /* Styling untuk tabel ringkasan pesanan (tetap sama atau sesuaikan jika perlu) */
     .recent-orders-table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 15px;
-        font-size: 0.9em; /* Sedikit perkecil font tabel */
+        font-size: 0.9em; 
     }
     .recent-orders-table th, .recent-orders-table td {
         padding: 12px 15px; /* Padding disesuaikan */
-        border: 1px solid #e9ecef; /* Border lebih halus */
+        border: 1px solid #e9ecef; 
         text-align: left;
     }
     .recent-orders-table thead th {
@@ -97,14 +19,7 @@
         font-weight: 600;
         color: #495057;
     }
-    .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-weight: 500; font-size: 0.8em; text-transform: capitalize; }
-    .status-badge.pending { background-color: #ffe0b2; color: #e65100; }
-    .status-badge.diproses { background-color: #bbdefb; color: #0d47a1; }
-    .status-badge.dikirim { background-color: #d1c4e9; color: #311b92; }
-    .status-badge.selesai { background-color: #c8e6c9; color: #1b5e20; }
-    .status-badge.dibatalkan { background-color: #ffcdd2; color: #b71c1c; }
-
-    h3.section-title { /* Untuk judul tabel ringkasan */
+    h3.section-title { 
         margin-top: 40px; 
         margin-bottom: 15px; 
         color: #2c3e50;
@@ -112,15 +27,7 @@
         padding-bottom: 5px;
         border-bottom: 1px solid #eee;
     }
-    .chart-container {
-        background-color: #ffffff;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        margin-top: 30px;
-        position: relative; /* Diperlukan agar chart bisa responsif di dalamnya */
-        height: 400px; /* Atur tinggi tetap, misalnya 400px. Anda bisa sesuaikan angkanya. */
-    }
+
 </style>
 @endpush
 
@@ -137,7 +44,7 @@
             <div class="stat-card orders-today"> 
                 <h3>Total Pesanan Hari Ini ({{ \Carbon\Carbon::today()->translatedFormat('d M Y') }})</h3>
                 <span class="stat-number">{{ $totalPesananHariIni_SemuaStatus ?? 0 }}</span>
-                <a href="{{ route('admin.pesanan.index', ['filter_tanggal_pengiriman' => \Carbon\Carbon::today()->toDateString()]) }}" class="stat-link">
+                <a href="{{ route('admin.pesanan.operasional', ['filter_tanggal_pengiriman' => \Carbon\Carbon::today()->toDateString()]) }}" class="stat-link">
                     Lihat Semua Pesanan Hari Ini
                 </a>
             </div>
@@ -145,7 +52,7 @@
             <div class="stat-card orders-tomorrow"> 
                 <h3>Total Pesanan Besok ({{ \Carbon\Carbon::tomorrow()->translatedFormat('d M Y') }})</h3>
                 <span class="stat-number">{{ $totalPesananBesok_SemuaStatus ?? 0 }}</span>
-                <a href="{{ route('admin.pesanan.index', ['filter_tanggal_pengiriman' => \Carbon\Carbon::tomorrow()->toDateString()]) }}" class="stat-link">
+                <a href="{{ route('admin.pesanan.operasional', ['filter_tanggal_pengiriman' => \Carbon\Carbon::tomorrow()->toDateString()]) }}" class="stat-link">
                     Lihat Semua Pesanan Besok
                 </a>
             </div>
@@ -184,7 +91,7 @@
                         <tr>
                             <td>{{ $pesanan->id }}</td><td>{{ $pesanan->nama_pelanggan }}</td><td>{{ $pesanan->waktu_pengiriman ?? '-' }}</td>
                             <td><span class="status-badge {{ strtolower(str_replace(' ', '_', $pesanan->status_pesanan)) }}">{{ ucfirst($pesanan->status_pesanan) }}</span></td>
-                            <td><a href="{{ route('admin.pesanan.show', $pesanan->id) }}" class="btn btn-sm btn-info">Detail</a></td>
+                            <td><a href="{{ route('admin.pesanan.operasional.show', $pesanan->id) }}" class="btn btn-sm btn-info">Detail</a></td>
                         </tr>
                         @endforeach
                     </tbody>

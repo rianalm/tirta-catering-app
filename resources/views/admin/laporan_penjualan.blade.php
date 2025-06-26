@@ -5,12 +5,10 @@
 
 @push('styles')
 <style>
-    /* Gaya CSS yang sebelumnya ada di <style> tag di file asli dipindahkan ke sini */
-    /* ... (Salin semua CSS dari file asli Anda ke sini) ... */
     .container-content { max-width: 1000px; margin: 0 auto; }
     .content-header h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; font-size: 2.5em; font-weight: 700; }
     .report-summary {
-        background-color: #e6f7ff; border: 1px solid #91d5ff; border-radius: 8px;
+        background color: #e6f7ff; border: 1px solid #91d5ff; border-radius: 8px;
         padding: 20px; margin-bottom: 30px; text-align: center;
     }
     .report-summary h2 { color: #0050b3; margin-top: 0; font-size: 1.8em; margin-bottom: 15px; }
@@ -38,8 +36,6 @@
     .back-link { /* .btn .btn-secondary */
         display: inline-block; margin-top: 30px; text-align: center;
     }
-    
-    /* Table Styling */
     .table-responsive { overflow-x: auto; }
     table {
         width: 100%; border-collapse: collapse; margin-top: 0; /* Disesuaikan */
@@ -59,14 +55,6 @@
         display: inline-block; padding: 5px 10px; border-radius: 5px;
         font-weight: 600; font-size: 0.85em; text-transform: capitalize;
     }
-    /* Status badge colors (sama seperti di show_pesanan) */
-    .status-badge.pending, .status-badge.baru { background-color: #ffe0b2; color: #e65100; }
-    .status-badge.diproses { background-color: #bbdefb; color: #0d47a1; }
-    .status-badge.selesai { background-color: #c8e6c9; color: #1b5e20; }
-    .status-badge.dibatalkan { background-color: #ffcdd2; color: #b71c1c; }
-    .status-badge.dikirim { background-color: #d1c4e9; color: #311b92; }
-
-
     @media (max-width: 768px) {
         .filter-form { flex-direction: column; align-items: stretch; }
         .filter-form .form-group { width: 100%; }

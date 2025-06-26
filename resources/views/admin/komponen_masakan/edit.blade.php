@@ -1,6 +1,4 @@
-{{-- resources/views/admin/komponen_masakan/edit.blade.php --}}
 @extends('layouts.admin')
-
 @section('title', 'Edit Komponen Masakan')
 
 @push('styles')

@@ -1,7 +1,5 @@
 @extends('layouts.admin')
-
 @section('title', 'Laporan Kebutuhan Dapur')
-
 @push('styles')
 <style>
     /* Styling dasar untuk laporan */
@@ -66,8 +64,10 @@
         </table>
     </div>
 
-     <div style="margin-top: 20px; text-align: right;">
-        <button onclick="window.print()" class="btn btn-dark"><i class="fas fa-print" style="margin-right: 8px;"></i> Cetak Laporan</button>
+    <div style="margin-top: 20px; text-align: right;">
+    <a href="{{ route('admin.laporan.dapur.pdf', ['tanggal' => $targetDate]) }}" target="_blank" class="btn btn-dark">
+        <i class="fas fa-print" style="margin-right: 8px;"></i> Cetak Laporan (PDF)
+    </a>
     </div>
 
 </div>

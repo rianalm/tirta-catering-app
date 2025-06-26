@@ -5,10 +5,6 @@
 
 @push('styles')
 <style>
-    /* Gaya CSS yang sebelumnya ada di <style> tag di file asli dipindahkan ke sini */
-    /* ... (Salin semua CSS dari file asli Anda ke sini) ... */
-    /* Contoh sebagian styling yang mungkin spesifik atau di-override */
-    .container-content { /* max-width: 900px; (sesuaikan jika perlu) */ }
     .header-actions {
         display: flex; justify-content: space-between; align-items: center;
         margin-bottom: 25px; flex-wrap: wrap; gap: 15px;
@@ -18,15 +14,9 @@
         padding: 10px 15px; border: 1px solid #ced4da; border-radius: 8px;
         font-size: 1em; width: 250px; box-sizing: border-box;
     }
-    .header-actions .search-box button { /* .btn .btn-primary */
-        /* padding: 10px 15px; font-size: 1em; */
-    }
-    .btn-add { /* .btn .btn-success */
-        /* padding: 10px 20px; font-weight: 600; */
-    }
     .table-responsive { overflow-x: auto; }
     table {
-        width: 100%; border-collapse: collapse; margin-top: 0; /* Disesuaikan */
+        width: 100%; border-collapse: collapse; margin-top: 0; 
         background-color: #fff; border-radius: 10px; overflow: hidden;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     }
@@ -42,26 +32,14 @@
         padding: 8px 12px; font-size: 0.9em; font-weight: 500;
         /* Warna sudah diatur oleh class .btn-* dari layout */
     }
-    .pagination { /* Mirip dengan index_pesanan, bisa digeneralisasi di CSS utama admin */
-        margin-top: 25px; display: flex; justify-content: center; align-items: center; gap: 10px;
-    }
-    .pagination a, .pagination span {
-        padding: 8px 15px; border: 1px solid #dee2e6; border-radius: 6px;
-        text-decoration: none; color: #007bff; transition: background-color 0.2s, color 0.2s;
-    }
-    .pagination a:hover { background-color: #007bff; color: white; }
-    .pagination .current { background-color: #007bff; color: white; border-color: #007bff; }
-    .pagination .disabled { color: #6c757d; pointer-events: none; background-color: #e9ecef; }
-    
-    /* Alert & Modal (Sama seperti di index_pesanan, bisa digeneralisasi) */
     .alert.show { opacity: 1; display: block !important; } /* Pastikan display block saat show */
     .modal {
-        display: none; position: fixed; z-index: 1050; /* Lebih tinggi dari sidebar jika sidebar fixed */
+        display: none; position: fixed; z-index: 1050; 
         left: 0; top: 0; width: 100%; height: 100%; overflow: auto;
         background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center;
         opacity: 0; transition: opacity 0.3s ease-in-out;
     }
-    .modal.show { opacity: 1; display: flex !important; } /* Gunakan flex untuk centering */
+    .modal.show { opacity: 1; display: flex !important; } 
     .modal-content {
         background-color: #fefefe; margin: auto; padding: 30px; border: 1px solid #888;
         border-radius: 12px; width: 90%; max-width: 400px; text-align: center;
@@ -72,8 +50,7 @@
     .modal-content h3 { color: #333; margin-top: 0; margin-bottom: 20px; }
     .modal-content p { margin-bottom: 25px; color: #555; }
     .modal-buttons { display: flex; justify-content: center; gap: 15px; }
-    /* .modal-buttons button, .btn-cancel, .btn-confirm sudah diatur oleh class .btn dari layout */
-
+   
     @media (max-width: 768px) {
         .header-actions { flex-direction: column; align-items: stretch; }
         .header-actions .search-box { width: 100%; flex-direction: column; }

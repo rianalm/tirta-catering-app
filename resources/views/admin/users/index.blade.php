@@ -4,7 +4,6 @@
 
 @push('styles')
 <style>
-    /* Header Aksi: Tombol di kiri, Search di kanan */
     .header-actions {
         display: flex;
         justify-content: space-between;
@@ -27,8 +26,6 @@
         font-size: 1em;
         width: 250px;
     }
-
-    /* CSS BARU UNTUK USER CARD */
     .user-card-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -43,7 +40,7 @@
         display: flex;
         flex-direction: column;
         transition: all 0.3s ease;
-        border-top: 4px solid #6c757d; /* Border default */
+        border-top: 4px solid #6c757d; 
     }
     /* Warna border atas kartu berdasarkan peran */
     .user-card.role-admin { border-top-color: #dc3545; }
@@ -98,26 +95,6 @@
         gap: 10px;
     }
     .user-card-actions .btn-sm { width: 38px; height: 32px; }
-    
-    /* CSS Paginasi Lengkap */
-    .pagination-container { margin-top: 30px; display: flex; justify-content: center; }
-    .pagination { display: flex; padding-left: 0; list-style: none; border-radius: .375rem; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-    .page-item .page-link { position: relative; display: block; padding: .5rem .75rem; margin-left: -1px; line-height: 1.25; color: #007bff; background-color: #fff; border: 1px solid #dee2e6; }
-    .page-item:not(:first-child) .page-link { margin-left: -1px; }
-    .page-item:first-child .page-link { border-top-left-radius: .25rem; border-bottom-left-radius: .25rem; }
-    .page-item:last-child .page-link { border-top-right-radius: .25rem; border-bottom-right-radius: .25rem; }
-    .page-item.active .page-link { z-index: 3; color: #fff; background-color: #007bff; border-color: #007bff; }
-    .page-item.disabled .page-link { color: #6c757d; pointer-events: none; background-color: #e9ecef; border-color: #dee2e6; }
-    .page-link:hover { z-index: 2; color: #0056b3; text-decoration: none; background-color: #e9ecef; border-color: #dee2e6; }
-
-    /* CSS Modal Lengkap */
-    .custom-modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease-in-out; }
-    .custom-modal.show { opacity: 1; display: flex !important; }
-    .custom-modal-content { background-color: #fefefe; margin: auto; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.2); transform: translateY(-20px); transition: transform 0.3s ease-in-out; }
-    .custom-modal.show .custom-modal-content { transform: translateY(0); }
-    .custom-modal-content h3 { color: #333; margin-top: 0; margin-bottom: 20px; }
-    .custom-modal-content p { margin-bottom: 25px; color: #555; }
-    .custom-modal-buttons { display: flex; justify-content: center; gap: 15px; }
 </style>
 @endpush
 

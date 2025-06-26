@@ -1,7 +1,5 @@
 @extends('layouts.admin')
-
 @section('title', 'Edit Invoice untuk Pesanan #' . $pesanan->id)
-
 @push('styles')
 <style>
     .invoice-form-container { max-width: 700px; margin: 0 auto; }

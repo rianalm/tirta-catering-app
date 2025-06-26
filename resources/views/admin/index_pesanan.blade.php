@@ -4,18 +4,10 @@
 
 @push('styles')
 <style>
-    /* Styling untuk badge status */
     .status-badge {
         display: inline-block; padding: 5px 10px; border-radius: 5px;
         font-weight: 600; font-size: 0.85em; text-transform: capitalize; color: white;
     }
-    .status-badge.pending { background-color: #ff9800; }
-    .status-badge.diproses { background-color: #007bff; }
-    .status-badge.dikirim { background-color: #6f42c1; }
-    .status-badge.selesai { background-color: #28a745; }
-    .status-badge.dibatalkan { background-color: #dc3545; }
-
-    /* Styling untuk container filter */
     .filter-search-container {
         display: flex; justify-content: space-between; align-items: flex-start; 
         gap: 15px; margin-bottom: 25px; background-color: #f8f9fa;
@@ -34,42 +26,13 @@
     }
     .action-buttons-filter { display: flex; gap: 10px; align-items: flex-end; }
     
-    /* Styling untuk tabel */
     .table-responsive { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); }
     th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eceeef; vertical-align: middle; }
     thead th { background-color: #f8f9fa; color: #495057; font-weight: 700; text-transform: uppercase; font-size: 0.85em; }
     tbody tr:hover { background-color: #f6f9fc; }
-    
     .actions { display: flex; gap: 5px; flex-wrap: wrap; }
     .actions .btn-sm { width: 36px; height: 32px; font-size: 0.85em; }
-
-    /* Styling Paginasi */
-    .pagination-container { margin-top: 30px; display: flex; justify-content: center; }
-    
-    /* Styling Modal */
-    .custom-modal {
-        display: none; position: fixed; z-index: 1050; left: 0; top: 0;
-        width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);
-        justify-content: center; align-items: center; opacity: 0;
-        transition: opacity 0.3s ease-in-out;
-    }
-    .custom-modal.show { opacity: 1; display: flex !important; }
-    .custom-modal-content {
-        background-color: #fefefe; margin: auto; padding: 30px;
-        border-radius: 12px; width: 90%; max-width: 400px; text-align: center;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-        transform: translateY(-20px); transition: transform 0.3s ease-in-out;
-        position: relative; /* Untuk posisi tombol close */
-    }
-    .custom-modal.show .custom-modal-content { transform: translateY(0); }
-    .custom-modal-content h3 { color: #333; margin-top: 0; margin-bottom: 20px; }
-    .custom-modal-content p { margin-bottom: 25px; color: #555; }
-    .custom-modal-buttons { display: flex; justify-content: center; gap: 15px; }
-    .close-button {
-        position: absolute; top: 10px; right: 20px;
-        color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer;
-    }
 </style>
 @endpush
 

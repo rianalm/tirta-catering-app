@@ -1,6 +1,4 @@
-{{-- resources/views/admin/produk/create.blade.php --}}
 @extends('layouts.admin')
-
 @section('title', 'Tambah Produk Baru')
 
 @push('styles')

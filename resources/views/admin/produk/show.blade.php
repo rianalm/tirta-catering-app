@@ -1,18 +1,16 @@
-{{-- resources/views/admin/produk/show.blade.php --}}
 @extends('layouts.admin')
 
 @section('title', 'Detail Produk - ' . $produk->nama_produk)
 
 @push('styles')
 <style>
-    /* Gaya CSS spesifik untuk halaman ini jika ada */
     .container-content { max-width: 700px; margin: 0 auto; }
     .content-header h1 { text-align: center; }
     .detail-group {
         margin-bottom: 15px; padding: 10px 0;
         border-bottom: 1px dashed #e0e0e0;
     }
-    .detail-group:last-of-type { border-bottom: none; } /* Menggunakan last-of-type untuk elemen terakhir dengan class ini */
+    .detail-group:last-of-type { border-bottom: none; }
     .detail-group label {
         font-weight: 600; color: #495057; display: block; margin-bottom: 5px;
     }

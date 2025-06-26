@@ -1,0 +1,212 @@
+/* =================================
+   1. CSS Global & Reset
+==================================== */
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, h3, p, ul, li { margin: 0; padding: 0; }
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+}
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+
+/* =================================
+   2. Layout Utama (Wrapper, Sidebar, Topbar, Konten)
+==================================== */
+.admin-wrapper { display: flex; min-height: 100vh; position: relative; }
+
+.admin-sidebar {
+    width: 260px; background-color: #2c3e50; color: #ecf0f1; position: fixed;
+    height: 100%; z-index: 1010; display: flex; flex-direction: column;
+    transform: translateX(0); transition: transform 0.3s ease-in-out;
+}
+.admin-sidebar.collapsed { transform: translateX(-100%); }
+.sidebar-header { padding: 20px; text-align: center; }
+.sidebar-brand { font-size: 1.8em; font-weight: 700; color: #ffffff; }
+.sidebar-nav { flex-grow: 1; overflow-y: auto; }
+.nav-link {
+    display: flex; align-items: center; padding: 12px 20px; color: #bdc3c7;
+    border-left: 3px solid transparent; transition: all 0.2s ease;
+}
+.nav-link:hover, .nav-link.active { background-color: #34495e; color: #ffffff; border-left-color: #1abc9c; }
+.nav-icon { width: 20px; height: 20px; margin-right: 15px; flex-shrink: 0; }
+.nav-header { padding: 25px 20px 10px; font-size: 0.8em; color: #95a5a6; text-transform: uppercase; font-weight: 600; }
+
+.main-panel {
+    margin-left: 260px; width: calc(100% - 260px);
+    transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
+}
+.main-panel.sidebar-collapsed { margin-left: 0; width: 100%; }
+
+.admin-topbar {
+    background-color: #ffffff; padding: 0 30px; border-bottom: 1px solid #e9ecef;
+    display: flex; justify-content: space-between; align-items: center;
+    height: 65px; position: sticky; top: 0; z-index: 1000;
+}
+#sidebar-toggle { background: none; border: none; font-size: 1.4em; cursor: pointer; color: #333; padding: 10px; }
+.user-dropdown { position: relative; }
+.user-dropdown-toggle { display: flex; align-items: center; cursor: pointer; padding: 10px; }
+.user-name { margin-right: 15px; font-weight: 600; color: #333; }
+.user-avatar { font-size: 1.8em; color: #6c757d; }
+.user-dropdown-menu {
+    display: none; position: absolute; right: 0; top: 110%; background-color: white;
+    min-width: 200px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); z-index: 1;
+    border-radius: 8px; overflow: hidden; border: 1px solid #eee;
+}
+.user-dropdown-menu button {
+    color: black; padding: 12px 16px; display: flex;
+    align-items: center; gap: 10px; width: 100%; border: none;
+    background: none; text-align: left; font-size: 0.95em; cursor: pointer;
+}
+.user-dropdown-menu button:hover { background-color: #f1f1f1; }
+.user-dropdown:hover .user-dropdown-menu { display: block; }
+
+.admin-main-content { padding: 30px; }
+.content-header h1 { color: #2c3e50; margin-bottom: 25px; font-size: 2.2em; }
+.container-content { background-color: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+
+/* =================================
+   3. Komponen Umum (Tombol, Alert, Badge)
+==================================== */
+.btn { padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: none; font-size: 0.95em; display: inline-flex; align-items: center; justify-content: center; }
+.btn-sm { padding: 8px 12px !important; font-size: 0.85em !important; }
+.btn-primary { background-color: #007bff; color: white; }
+.btn-primary:hover { background-color: #0056b3; }
+.btn-success { background-color: #28a745; color: white; }
+.btn-success:hover { background-color: #1e7e34; }
+.btn-danger { background-color: #dc3545; color: white; }
+.btn-danger:hover { background-color: #b02a37; }
+.btn-warning { background-color: #ffc107; color: #212529; }
+.btn-warning:hover { background-color: #d39e00; }
+.btn-info { background-color: #17a2b8; color: white; }
+.btn-info:hover { background-color: #117a8b; }
+.btn-secondary { background-color: #6c757d; color: white; }
+.btn-secondary:hover { background-color: #545b62; }
+
+.alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 1em; }
+.alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.alert-danger { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+
+.status-badge, .role-badge { display: inline-block; padding: 4px 8px; font-size: 0.8em; font-weight: 600; border-radius: 4px; color: #fff; text-transform: capitalize; }
+.status-badge.pending { background-color: #ff9800; }
+.status-badge.diproses { background-color: #007bff; }
+.status-badge.dikirim { background-color: #6f42c1; }
+.status-badge.selesai { background-color: #28a745; }
+.status-badge.dibatalkan { background-color: #dc3545; }
+.role-badge.admin { background-color: #dc3545; }
+.role-badge.tim_dapur, .role-badge.tim_packing, .role-badge.driver { background-color: #007bff; }
+
+.custom-modal {
+        display: none; position: fixed; z-index: 1050; left: 0; top: 0;
+        width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);
+        justify-content: center; align-items: center; opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+    .custom-modal.show { opacity: 1; display: flex !important; }
+    .custom-modal-content {
+        background-color: #fefefe; margin: auto; padding: 30px;
+        border-radius: 12px; width: 90%; max-width: 400px; text-align: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        transform: translateY(-20px); transition: transform 0.3s ease-in-out;
+        position: relative; /* Untuk posisi tombol close */
+    }
+    .custom-modal.show .custom-modal-content { transform: translateY(0); }
+    .custom-modal-content h3 { color: #333; margin-top: 0; margin-bottom: 20px; }
+    .custom-modal-content p { margin-bottom: 25px; color: #555; }
+    .custom-modal-buttons { display: flex; justify-content: center; gap: 15px; }
+    .close-button {
+        position: absolute; top: 10px; right: 20px;
+        color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer;
+    }
+/* =================================
+   4. Komponen Halaman Spesifik
+==================================== */
+
+/* --- Filter & Search --- */
+.filter-search-container, .header-actions {
+    display: flex; justify-content: space-between; align-items: flex-start; 
+    gap: 15px; margin-bottom: 25px; background-color: #f8f9fa;
+    padding: 20px; border-radius: 10px; border: 1px solid #e9ecef;
+    flex-wrap: wrap; 
+}
+.filter-search-container form, .header-actions form {
+    display: flex; gap: 15px; align-items: flex-end; 
+    flex-wrap: wrap;
+}
+.form-filter-group { display: flex; flex-direction: column; gap: 5px; }
+.form-filter-group label { font-weight: 600; color: #495057; font-size: 0.9em; margin-bottom: 2px; }
+.form-filter-group select, .form-filter-group input { padding: 10px 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 1em; }
+.action-buttons-filter { display: flex; gap: 10px; align-items: flex-end; }
+
+/* --- Tabel --- */
+.table-responsive { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); }
+th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eceeef; vertical-align: middle; }
+thead th { background-color: #f8f9fa; color: #495057; font-weight: 700; text-transform: uppercase; font-size: 0.85em; }
+tbody tr:hover { background-color: #f6f9fc; }
+td.actions { display: flex; gap: 5px; flex-wrap: wrap; }
+td.actions .btn-sm { width: 36px; height: 32px; font-size: 0.85em; }
+
+/* --- Paginasi --- */
+.pagination-container { margin-top: 30px; display: flex; justify-content: center; }
+.pagination { display: flex; padding-left: 0; list-style: none; border-radius: .375rem; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.page-item .page-link { position: relative; display: block; padding: .5rem .75rem; margin-left: -1px; line-height: 1.25; color: #007bff; background-color: #fff; border: 1px solid #dee2e6; }
+.page-item:not(:first-child) .page-link { margin-left: -1px; }
+.page-item:first-child .page-link { border-top-left-radius: .25rem; border-bottom-left-radius: .25rem; }
+.page-item:last-child .page-link { border-top-right-radius: .25rem; border-bottom-right-radius: .25rem; }
+.page-item.active .page-link { z-index: 3; color: #fff; background-color: #007bff; border-color: #007bff; }
+.page-item.disabled .page-link { color: #6c757d; pointer-events: none; background-color: #e9ecef; border-color: #dee2e6; }
+.page-link:hover { z-index: 2; color: #0056b3; text-decoration: none; background-color: #e9ecef; border-color: #dee2e6; }
+
+/* --- Modal --- */
+.custom-modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+
+/* --- Dashboard: Stat Cards & Chart --- */
+.stat-card-container { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
+.stat-card {
+    background-color: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 25px; flex: 1; min-width: 230px; transition: all 0.3s ease;
+    border-left: 5px solid transparent;
+}
+.stat-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.12); transform: translateY(-3px); }
+.stat-card h3 { margin-top: 0; margin-bottom: 12px; font-size: 1.1em; color: #555; font-weight: 600; }
+.stat-card .stat-number { font-size: 2.2em; font-weight: 700; margin-bottom: 12px; display: block; }
+.stat-card .stat-link { font-size: 0.9em; text-decoration: none; font-weight: 500; }
+.stat-card.orders-today { border-left-color: #28a745; }
+.stat-card.orders-today .stat-number, .stat-card.orders-today .stat-link { color: #28a745; }
+.stat-card.orders-tomorrow { border-left-color: #ffc107; }
+.stat-card.orders-tomorrow .stat-number, .stat-card.orders-tomorrow .stat-link { color: #ff9800; }
+.stat-card.orders-completed { border-left-color: #17a2b8; }
+.stat-card.orders-completed .stat-number, .stat-card.orders-completed .stat-link { color: #17a2b8; }
+.stat-card.products-total { border-left-color: #6f42c1; }
+.stat-card.products-total .stat-number, .stat-card.products-total .stat-link { color: #6f42c1; }
+.chart-container { background-color: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); margin-top: 30px; position: relative; height: 400px; }
+
+/* --- User Cards --- */
+.user-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 20px; }
+.user-card { background-color: #fff; border: 1px solid #e9ecef; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: all 0.3s ease; border-top: 4px solid #6c757d; }
+.user-card.role-admin { border-top-color: #dc3545; }
+.user-card.role-tim_dapur { border-top-color: #007bff; }
+.user-card.role-tim_packing { border-top-color: #17a2b8; }
+.user-card.role-driver { border-top-color: #28a745; }
+.user-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+.user-card-body { padding: 20px; display: flex; align-items: center; gap: 15px; flex-grow: 1; }
+.user-card-avatar i { font-size: 3.5em; color: #adb5bd; }
+.user-card-info .user-name { font-weight: 600; font-size: 1.2em; color: #2c3e50; }
+.user-card-info .user-email { font-size: 0.9em; color: #777; word-break: break-all; }
+.user-card-roles { margin-top: 8px; }
+.user-card-actions { background-color: #f8f9fa; padding: 10px 20px; border-top: 1px solid #e9ecef; display: flex; justify-content: flex-end; gap: 10px; }
+
+/* =================================
+   5. Utility & Print Styles
+==================================== */
+.fas, .fa-solid { font-weight: 900 !important; }
+.far, .fa-regular { font-weight: 400 !important; }
+i.fas, i.far, i.fab { -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; display: inline-block; font-style: normal; font-variant: normal; text-rendering: auto; line-height: 1; }
+
+@media print {
+    .admin-sidebar, .content-header, .action-buttons, .back-link, .filter-container, .header-actions { display: none !important; }
+    .container-content, .work-order-container { box-shadow: none !important; border: none !important; padding: 0 !important; }
+}

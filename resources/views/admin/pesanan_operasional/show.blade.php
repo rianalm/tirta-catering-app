@@ -1,5 +1,4 @@
 @extends('layouts.admin')
-
 @section('title', 'Detail Pesanan Operasional #' . $pesanan->id)
 
 @push('styles')
@@ -86,7 +85,6 @@
     .btn-print { background-color: #5a6268; color: white; }
     .btn-print:hover { background-color: #474d52; }
 
-    /* Print styles */
     @media print {
         body, .admin-main-content, .container-content {
             background: #fff !important;
@@ -95,7 +93,7 @@
             box-shadow: none !important;
         }
         .admin-sidebar, .content-header, .action-buttons, .back-link, #filterOperasionalForm {
-            display: none !important; /* Sembunyikan elemen yang tidak perlu saat cetak */
+            display: none !important; 
         }
         .work-order-container {
             box-shadow: none;

@@ -1,11 +1,7 @@
-{{-- resources/views/admin/show_pesanan.blade.php --}}
 @extends('layouts.admin')
-
 @section('title', 'Detail Pesanan #' . $pesanan->id)
-
 @push('styles')
 <style>
-    /* ... (CSS Anda tetap sama seperti versi terakhir yang sudah benar) ... */
     .container-content { max-width: 900px; margin: 0 auto; }
     .content-header h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; font-size: 2.5em; font-weight: 700; }
     .detail-section { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #e9ecef; }
@@ -14,7 +10,7 @@
         color: #34495e; font-size: 1.6em; margin-top: 0; margin-bottom: 15px;
         border-bottom: 2px solid #e9ecef; padding-bottom: 10px;
     }
-    .detail-item { display: flex; margin-bottom: 10px; flex-wrap: wrap; /* Menambahkan wrap untuk mobile */ }
+    .detail-item { display: flex; margin-bottom: 10px; flex-wrap: wrap; }
     .detail-item strong { flex: 0 0 180px; color: #555; font-weight: 600; }
     .detail-item span { flex-grow: 1; color: #333; }
     .item-list { list-style: none; padding: 0; margin-top: 10px; }
@@ -62,17 +58,11 @@
         text-align: right;
     }
 
-    .status-badge.pending, .status-badge.baru { background-color: #ffe0b2; color: #e65100; }
-    .status-badge.diproses { background-color: #bbdefb; color: #0d47a1; }
-    .status-badge.dikirim { background-color: #d1c4e9; color: #311b92; }
-    .status-badge.selesai { background-color: #c8e6c9; color: #1b5e20; }
-    .status-badge.dibatalkan { background-color: #ffcdd2; color: #b71c1c; }
-
     .actions {
         display: flex;
-        justify-content: center; /* Tombol di tengah */
+        justify-content: center; 
         align-items: center;
-        gap: 10px; /* Jarak antar tombol */
+        gap: 10px; 
         flex-wrap: wrap;
         margin-top: 30px;
         padding-top: 20px;
@@ -80,12 +70,12 @@
     }
 
     .actions .btn-sm {
-        width: 40px; /* Sedikit lebih besar untuk ikon */
+        width: 40px; 
         height: 36px;
     }
 
     .actions .btn-back {
-        padding: 8px 15px; /* Tombol kembali dengan teks */
+        padding: 8px 15px; 
     }
 
     @media (max-width: 768px) {
@@ -93,7 +83,7 @@
         .detail-item { flex-direction: column; align-items: flex-start; }
         .detail-item strong { flex: none; width: 100%; margin-bottom: 3px; }
         .detail-item span { width: 100%; }
-        .actions .btn { width: 100%; margin: 5px 0 !important; /* Perbaikan margin pada mobile */ }
+        .actions .btn { width: 100%; margin: 5px 0 !important;  }
     }
 </style>
 @endpush
